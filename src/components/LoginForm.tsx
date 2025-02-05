@@ -1,16 +1,10 @@
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-
-// Initialize Supabase client with environment variables
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [email, setEmail] = useState("");
