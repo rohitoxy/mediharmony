@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import DoctorInterface from "@/components/DoctorInterface";
 import NurseInterface from "@/components/NurseInterface";
 import { motion } from "framer-motion";
 import { Pill } from "lucide-react";
+import LoginForm from "@/components/LoginForm";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Session } from "@supabase/supabase-js";
 
 interface Medication {
   id: string;
@@ -18,9 +21,30 @@ interface Medication {
 const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleMedicationAdd = (medication: Medication) => {
     setMedications([...medications, medication]);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSelectedInterface(null);
   };
 
   if (!selectedInterface) {
@@ -73,6 +97,21 @@ const Index = () => {
     );
   }
 
+  if (selectedInterface === "doctor" && !session) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <Button
+          variant="outline"
+          onClick={() => setSelectedInterface(null)}
+          className="mb-6"
+        >
+          Back to Home
+        </Button>
+        <LoginForm onSuccess={() => setSession(session)} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container py-8">
@@ -81,12 +120,19 @@ const Index = () => {
             <Pill className="w-8 h-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Med Alert</h1>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setSelectedInterface(null)}
-          >
-            Back to Home
-          </Button>
+          <div className="flex gap-4">
+            {session && (
+              <Button variant="outline" onClick={handleLogout}>
+                Logout
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setSelectedInterface(null)}
+            >
+              Back to Home
+            </Button>
+          </div>
         </div>
         
         <Tabs value={selectedInterface} className="w-full">
