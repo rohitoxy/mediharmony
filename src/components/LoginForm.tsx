@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
-// Initialize Supabase client
+// Initialize Supabase client with environment variables
 const supabase = createClient(
-  "https://your-project-url.supabase.co",
-  "your-anon-key"
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
 const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
