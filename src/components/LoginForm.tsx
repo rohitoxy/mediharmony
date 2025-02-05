@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
+// Initialize Supabase client
+const supabase = createClient(
+  "https://your-project-url.supabase.co",
+  "your-anon-key"
+);
+
 const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const supabase = createClientComponentClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

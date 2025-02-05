@@ -6,8 +6,14 @@ import NurseInterface from "@/components/NurseInterface";
 import { motion } from "framer-motion";
 import { Pill } from "lucide-react";
 import LoginForm from "@/components/LoginForm";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 import { Session } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  "https://your-project-url.supabase.co",
+  "your-anon-key"
+);
 
 interface Medication {
   id: string;
@@ -22,7 +28,6 @@ const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
