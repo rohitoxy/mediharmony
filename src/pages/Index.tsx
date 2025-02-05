@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import DoctorInterface from "@/components/DoctorInterface";
 import NurseInterface from "@/components/NurseInterface";
 import { motion } from "framer-motion";
-import { Medicine } from "lucide-react";
+import { Pill } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -37,7 +37,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center justify-center gap-3 mb-8"
           >
-            <Medicine className="w-10 h-10 text-primary" />
+            <Pill className="w-10 h-10 text-primary" />
             <h1 className="text-4xl font-bold text-gray-800">
               Med Alert
             </h1>
@@ -78,7 +78,7 @@ const Index = () => {
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-2">
-            <Medicine className="w-8 h-8 text-primary" />
+            <Pill className="w-8 h-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Med Alert</h1>
           </div>
           <Button
