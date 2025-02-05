@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import DoctorInterface from "@/components/DoctorInterface";
 import NurseInterface from "@/components/NurseInterface";
 import { motion } from "framer-motion";
+import { Medicine } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -31,13 +32,16 @@ const Index = () => {
         }}
       >
         <div className="space-y-8 text-center">
-          <motion.h1 
+          <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-gray-800 mb-8"
+            className="flex items-center justify-center gap-3 mb-8"
           >
-            Medicine Reminder
-          </motion.h1>
+            <Medicine className="w-10 h-10 text-primary" />
+            <h1 className="text-4xl font-bold text-gray-800">
+              Med Alert
+            </h1>
+          </motion.div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -73,7 +77,10 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Medicine Reminder</h1>
+          <div className="flex items-center gap-2">
+            <Medicine className="w-8 h-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">Med Alert</h1>
+          </div>
           <Button
             variant="outline"
             onClick={() => setSelectedInterface(null)}
