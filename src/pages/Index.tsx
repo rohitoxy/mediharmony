@@ -6,14 +6,8 @@ import NurseInterface from "@/components/NurseInterface";
 import { motion } from "framer-motion";
 import { Pill } from "lucide-react";
 import LoginForm from "@/components/LoginForm";
-import { createClient } from "@supabase/supabase-js";
 import { Session } from "@supabase/supabase-js";
-
-// Initialize Supabase client with environment variables
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/integrations/supabase/client";
 
 interface Medication {
   id: string;
