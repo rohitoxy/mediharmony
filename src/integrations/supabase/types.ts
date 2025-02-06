@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       medications: {
         Row: {
+          completed: boolean | null
           created_at: string
           dosage: string
           duration_days: number
@@ -23,6 +24,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          completed?: boolean | null
           created_at?: string
           dosage: string
           duration_days: number
@@ -35,6 +37,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          completed?: boolean | null
           created_at?: string
           dosage?: string
           duration_days?: number

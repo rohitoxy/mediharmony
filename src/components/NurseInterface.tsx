@@ -2,8 +2,19 @@ import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, User, DoorClosed, Pill, Volume2, VolumeX } from "lucide-react";
+import { Clock, User, DoorClosed, Pill, Volume2, VolumeX, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Medication {
   id: string;
@@ -15,12 +26,16 @@ interface Medication {
   foodTiming: string;
   time: string;
   notes: string;
+  completed?: boolean;
 }
 
-const NurseInterface = ({ medications }: { medications: Medication[] }) => {
+const NurseInterface = ({ medications: initialMedications }: { medications: Medication[] }) => {
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [medications, setMedications] = useState(initialMedications);
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -52,6 +67,8 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
 
   const checkMedications = () => {
     medications.forEach((med) => {
+      if (med.completed) return;
+      
       const [hours, minutes] = med.time.split(":");
       const medicationTime = new Date();
       medicationTime.setHours(parseInt(hours), parseInt(minutes), 0);
@@ -89,6 +106,64 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
     }
   };
 
+  const handleComplete = async (medication: Medication) => {
+    try {
+      const { error } = await supabase
+        .from('medications')
+        .update({ completed: true })
+        .eq('id', medication.id);
+
+      if (error) throw error;
+
+      setMedications(meds => 
+        meds.map(med => 
+          med.id === medication.id ? { ...med, completed: true } : med
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Medication marked as completed",
+      });
+    } catch (error) {
+      console.error('Error completing medication:', error);
+      toast({
+        title: "Error",
+        description: "Failed to mark medication as completed",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedMedication) return;
+
+    try {
+      const { error } = await supabase
+        .from('medications')
+        .delete()
+        .eq('id', selectedMedication.id);
+
+      if (error) throw error;
+
+      setMedications(meds => meds.filter(med => med.id !== selectedMedication.id));
+      setIsDeleteDialogOpen(false);
+      setSelectedMedication(null);
+
+      toast({
+        title: "Success",
+        description: "Medication deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting medication:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete medication",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="p-6 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -112,14 +187,18 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
         {medications.map((medication) => (
           <Card
             key={medication.id}
-            className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white"
+            className={`p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white ${
+              medication.completed ? 'opacity-60' : ''
+            }`}
           >
             <div className="space-y-4">
               <div className="flex justify-between items-start">
                 <Badge
                   variant="outline"
                   className={`mb-2 ${
-                    getTimeStatus(medication.time) === "upcoming"
+                    medication.completed
+                      ? "bg-green-100 text-green-800"
+                      : getTimeStatus(medication.time) === "upcoming"
                       ? "bg-accent text-white"
                       : getTimeStatus(medication.time) === "past"
                       ? "bg-muted"
@@ -129,6 +208,31 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
                   <Clock className="w-4 h-4 mr-1" />
                   {medication.time}
                 </Badge>
+                <div className="flex gap-2">
+                  {!medication.completed && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleComplete(medication)}
+                      className="h-8 w-8"
+                      title="Mark as completed"
+                    >
+                      <Check className="h-4 w-4 text-green-600" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedMedication(medication);
+                      setIsDeleteDialogOpen(true);
+                    }}
+                    className="h-8 w-8"
+                    title="Delete medication"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-600" />
+                  </Button>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -159,6 +263,23 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
           </Card>
         ))}
       </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Medication</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this medication? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
