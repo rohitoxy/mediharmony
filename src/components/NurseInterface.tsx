@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, User, DoorClosed, Pill } from "lucide-react";
+import { Clock, User, DoorClosed, Pill, Volume2, VolumeX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Medication {
   id: string;
@@ -19,15 +20,35 @@ interface Medication {
 const NurseInterface = ({ medications }: { medications: Medication[] }) => {
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Initialize audio
+    audioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+    audioRef.current.loop = false;
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
       checkMedications();
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, [medications]);
+
+  const playAlarm = () => {
+    if (isSoundEnabled && audioRef.current) {
+      audioRef.current.play().catch(error => {
+        console.error("Error playing audio:", error);
+      });
+    }
+  };
 
   const checkMedications = () => {
     medications.forEach((med) => {
@@ -45,6 +66,7 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
           description: `Patient ${med.patientId} in Room ${med.roomNumber} needs ${med.medicineName}`,
           variant: "destructive",
         });
+        playAlarm();
       }
     });
   };
@@ -60,9 +82,32 @@ const NurseInterface = ({ medications }: { medications: Medication[] }) => {
     return "future";
   };
 
+  const toggleSound = () => {
+    setIsSoundEnabled(!isSoundEnabled);
+    if (!isSoundEnabled && audioRef.current) {
+      audioRef.current.pause();
+    }
+  };
+
   return (
     <div className="p-6 animate-fade-in">
-      <h2 className="text-2xl font-semibold mb-6 text-center text-primary">Medication Schedule</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-primary">Medication Schedule</h2>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleSound}
+          className="ml-2"
+          title={isSoundEnabled ? "Disable sound" : "Enable sound"}
+        >
+          {isSoundEnabled ? (
+            <Volume2 className="h-4 w-4" />
+          ) : (
+            <VolumeX className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {medications.map((medication) => (
           <Card
