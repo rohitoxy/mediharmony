@@ -33,10 +33,19 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const [medications, setMedications] = useState(initialMedications);
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Initialize medications with proper data mapping
+    const mappedMedications = initialMedications.map(med => ({
+      ...med,
+      id: med.id.toString(), // Ensure ID is treated as string
+    }));
+    setMedications(mappedMedications);
+  }, [initialMedications]);
 
   useEffect(() => {
     // Initialize audio
@@ -109,10 +118,29 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
   const handleComplete = async (medication: Medication) => {
     try {
       console.log("Completing medication with ID:", medication.id);
+      
+      // Fetch the medication first to get the correct UUID
+      const { data: medData, error: fetchError } = await supabase
+        .from('medications')
+        .select('id')
+        .eq('patient_id', medication.patientId)
+        .eq('room_number', medication.roomNumber)
+        .eq('medicine_name', medication.medicineName)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching medication:', fetchError);
+        throw fetchError;
+      }
+
+      if (!medData) {
+        throw new Error('Medication not found');
+      }
+
       const { error } = await supabase
         .from('medications')
         .update({ completed: true })
-        .eq('id', medication.id);
+        .eq('id', medData.id);
 
       if (error) throw error;
 
@@ -141,10 +169,29 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
 
     try {
       console.log("Deleting medication with ID:", selectedMedication.id);
+      
+      // Fetch the medication first to get the correct UUID
+      const { data: medData, error: fetchError } = await supabase
+        .from('medications')
+        .select('id')
+        .eq('patient_id', selectedMedication.patientId)
+        .eq('room_number', selectedMedication.roomNumber)
+        .eq('medicine_name', selectedMedication.medicineName)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching medication:', fetchError);
+        throw fetchError;
+      }
+
+      if (!medData) {
+        throw new Error('Medication not found');
+      }
+
       const { error } = await supabase
         .from('medications')
         .delete()
-        .eq('id', selectedMedication.id);
+        .eq('id', medData.id);
 
       if (error) throw error;
 
