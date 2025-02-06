@@ -37,7 +37,7 @@ export const useMedications = (initialMedications: Medication[]) => {
         .eq('patient_id', medication.patientId)
         .eq('room_number', medication.roomNumber)
         .eq('medicine_name', medication.medicineName)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         console.error('Error fetching medication:', fetchError);
@@ -45,7 +45,13 @@ export const useMedications = (initialMedications: Medication[]) => {
       }
 
       if (!medData) {
-        throw new Error('Medication not found');
+        console.error('Medication not found in database');
+        toast({
+          title: "Error",
+          description: "Could not find the medication in the database",
+          variant: "destructive",
+        });
+        return;
       }
 
       const { error } = await supabase
@@ -85,7 +91,7 @@ export const useMedications = (initialMedications: Medication[]) => {
         .eq('patient_id', medication.patientId)
         .eq('room_number', medication.roomNumber)
         .eq('medicine_name', medication.medicineName)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         console.error('Error fetching medication:', fetchError);
@@ -93,7 +99,13 @@ export const useMedications = (initialMedications: Medication[]) => {
       }
 
       if (!medData) {
-        throw new Error('Medication not found');
+        console.error('Medication not found in database');
+        toast({
+          title: "Error",
+          description: "Could not find the medication in the database",
+          variant: "destructive",
+        });
+        return;
       }
 
       const { error } = await supabase
