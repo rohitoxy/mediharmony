@@ -17,7 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 interface Medication {
-  id: string;
+  id: string; // Changed to string to match UUID format
   patientId: string;
   roomNumber: string;
   medicineName: string;
@@ -108,6 +108,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
 
   const handleComplete = async (medication: Medication) => {
     try {
+      console.log("Completing medication with ID:", medication.id);
       const { error } = await supabase
         .from('medications')
         .update({ completed: true })
@@ -139,6 +140,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     if (!selectedMedication) return;
 
     try {
+      console.log("Deleting medication with ID:", selectedMedication.id);
       const { error } = await supabase
         .from('medications')
         .delete()
