@@ -9,6 +9,7 @@ import LoginForm from "@/components/LoginForm";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Medication {
   id: string;
@@ -26,19 +27,28 @@ const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
+    // Initialize session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session:", session);
       setSession(session);
+      setLoading(false);
     });
 
+    // Set up auth state listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session);
       setSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleMedicationAdd = (medication: Medication) => {
@@ -46,15 +56,43 @@ const Index = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSelectedInterface(null);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to log out. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        setSelectedInterface(null);
+        toast({
+          title: "Success",
+          description: "Logged out successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!selectedInterface) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10"
-      >
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="space-y-8 text-center">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -62,9 +100,7 @@ const Index = () => {
             className="flex items-center justify-center gap-3 mb-8"
           >
             <Pill className="w-10 h-10 text-primary" />
-            <h1 className="text-4xl font-bold text-gray-800">
-              Med Alert
-            </h1>
+            <h1 className="text-4xl font-bold text-gray-800">Med Alert</h1>
           </motion.div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.div
@@ -108,7 +144,10 @@ const Index = () => {
           Back to Home
         </Button>
         <div className="max-w-md mx-auto">
-          <LoginForm onSuccess={() => setSession(session)} />
+          <LoginForm onSuccess={() => {
+            console.log("Login successful");
+            // The session will be updated automatically by the auth state listener
+          }} />
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full mt-4">
@@ -120,7 +159,10 @@ const Index = () => {
               <DialogHeader>
                 <DialogTitle>Create New Account</DialogTitle>
               </DialogHeader>
-              <LoginForm onSuccess={() => setSession(session)} isSignUp />
+              <LoginForm onSuccess={() => {
+                console.log("Signup successful");
+                // The session will be updated automatically by the auth state listener
+              }} isSignUp />
             </DialogContent>
           </Dialog>
         </div>
