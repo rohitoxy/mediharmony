@@ -22,10 +22,13 @@ interface MedicationCardProps {
 }
 
 const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: MedicationCardProps) => {
+  const isAlertActive = timeStatus === "upcoming" && !medication.completed;
+
   return (
-    <Card className={`p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white ${
-      medication.completed ? 'opacity-60' : ''
-    }`}>
+    <Card className={`p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white 
+      ${medication.completed ? 'opacity-60' : ''}
+      ${isAlertActive ? 'animate-pulse border-2 border-red-500' : ''}
+    `}>
       <div className="space-y-4">
         <div className="flex justify-between items-start">
           <Badge
@@ -34,7 +37,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
               medication.completed
                 ? "bg-green-100 text-green-800"
                 : timeStatus === "upcoming"
-                ? "bg-accent text-white"
+                ? "bg-red-500 text-white animate-bounce"
                 : timeStatus === "past"
                 ? "bg-muted"
                 : "bg-primary text-white"
@@ -49,7 +52,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
                 variant="outline"
                 size="icon"
                 onClick={onComplete}
-                className="h-8 w-8"
+                className={`h-8 w-8 ${isAlertActive ? 'animate-bounce' : ''}`}
                 title="Mark as completed"
               >
                 <Check className="h-4 w-4 text-green-600" />

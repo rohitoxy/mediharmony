@@ -15,6 +15,7 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+  const alertedMedsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     audioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
@@ -44,21 +45,25 @@ export const useMedicationAlarm = (medications: Medication[]) => {
 
   const checkMedications = () => {
     medications.forEach((med) => {
-      if (med.completed) return;
+      if (med.completed) {
+        alertedMedsRef.current.delete(med.id);
+        return;
+      }
       
       const [hours, minutes] = med.time.split(":");
       const medicationTime = new Date();
       medicationTime.setHours(parseInt(hours), parseInt(minutes), 0);
 
-      if (
-        Math.abs(currentTime.getTime() - medicationTime.getTime()) < 1000 &&
-        currentTime.getHours() === parseInt(hours) &&
-        currentTime.getMinutes() === parseInt(minutes)
-      ) {
+      const timeDiff = Math.abs(currentTime.getTime() - medicationTime.getTime());
+      const isWithinAlertWindow = timeDiff <= 1800000; // 30 minutes
+
+      if (isWithinAlertWindow && !alertedMedsRef.current.has(med.id)) {
+        alertedMedsRef.current.add(med.id);
         toast({
-          title: "Medication Due!",
+          title: "⚠️ Medication Due!",
           description: `Patient ${med.patientId} in Room ${med.roomNumber} needs ${med.medicineName}`,
           variant: "destructive",
+          duration: 10000, // Show for 10 seconds
         });
         playAlarm();
       }
