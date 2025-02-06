@@ -6,37 +6,58 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
+const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Account created successfully",
+          });
+          onSuccess();
+        }
       } else {
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        onSuccess();
+
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Logged in successfully",
+          });
+          onSuccess();
+        }
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Auth error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -48,8 +69,8 @@ const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   return (
-    <Card className="p-6 w-full max-w-md mx-auto">
-      <form onSubmit={handleLogin} className="space-y-4">
+    <Card className="p-6 w-full shadow-lg bg-white">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -70,11 +91,12 @@ const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            placeholder="••••••••"
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+        <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
+          {loading ? (isSignUp ? "Creating Account..." : "Logging in...") : (isSignUp ? "Create Account" : "Login")}
         </Button>
       </form>
     </Card>

@@ -4,16 +4,20 @@ import { Button } from "@/components/ui/button";
 import DoctorInterface from "@/components/DoctorInterface";
 import NurseInterface from "@/components/NurseInterface";
 import { motion } from "framer-motion";
-import { Pill } from "lucide-react";
+import { Pill, UserPlus } from "lucide-react";
 import LoginForm from "@/components/LoginForm";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Medication {
   id: string;
   patientId: string;
+  roomNumber: string;
   medicineName: string;
   dosage: string;
+  durationDays: number;
+  foodTiming: string;
   time: string;
   notes: string;
 }
@@ -49,10 +53,7 @@ const Index = () => {
   if (!selectedInterface) {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{
-          background: "linear-gradient(109.6deg, rgba(223,234,247,1) 11.2%, rgba(244,248,252,1) 91.1%)"
-        }}
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10"
       >
         <div className="space-y-8 text-center">
           <motion.div 
@@ -98,7 +99,7 @@ const Index = () => {
 
   if (selectedInterface === "doctor" && !session) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10 p-6">
         <Button
           variant="outline"
           onClick={() => setSelectedInterface(null)}
@@ -106,13 +107,29 @@ const Index = () => {
         >
           Back to Home
         </Button>
-        <LoginForm onSuccess={() => setSession(session)} />
+        <div className="max-w-md mx-auto">
+          <LoginForm onSuccess={() => setSession(session)} />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full mt-4">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Create New Account
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Account</DialogTitle>
+              </DialogHeader>
+              <LoginForm onSuccess={() => setSession(session)} isSignUp />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10">
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-2">
