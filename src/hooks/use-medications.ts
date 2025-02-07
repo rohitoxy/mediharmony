@@ -2,30 +2,14 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Medication {
-  id: string;
-  patientId: string;
-  roomNumber: string;
-  medicineName: string;
-  dosage: string;
-  durationDays: number;
-  foodTiming: string;
-  time: string;
-  notes: string;
-  completed?: boolean;
-}
+import { Medication } from "@/pages/Index";
 
 export const useMedications = (initialMedications: Medication[]) => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    const mappedMedications = initialMedications.map(med => ({
-      ...med,
-      id: med.id.toString(),
-    }));
-    setMedications(mappedMedications);
+    setMedications(initialMedications);
   }, [initialMedications]);
 
   const handleComplete = async (medication: Medication) => {

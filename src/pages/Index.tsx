@@ -10,7 +10,7 @@ import LandingPage from "@/components/landing/LandingPage";
 import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
 
-interface Medication {
+export interface Medication {
   id: string;
   patientId: string;
   roomNumber: string;
@@ -20,6 +20,7 @@ interface Medication {
   foodTiming: string;
   time: string;
   notes?: string;
+  completed?: boolean;
 }
 
 const Index = () => {
@@ -56,7 +57,7 @@ const Index = () => {
           variant: "destructive",
         });
       } else if (data) {
-        const mappedMedications = data.map(med => ({
+        const mappedMedications: Medication[] = data.map(med => ({
           id: med.id,
           patientId: med.patient_id,
           medicineName: med.medicine_name,
@@ -65,7 +66,8 @@ const Index = () => {
           foodTiming: med.food_timing,
           time: med.notification_time,
           dosage: med.dosage,
-          notes: med.notes || "", // Handle notes being undefined
+          notes: med.notes || undefined,
+          completed: med.completed || false,
         }));
         setMedications(mappedMedications);
       }
@@ -91,7 +93,7 @@ const Index = () => {
             duration_days: medication.durationDays,
             food_timing: medication.foodTiming,
             notification_time: medication.time,
-            notes: medication.notes || "", // Handle notes being undefined
+            notes: medication.notes || null,
           }
         ])
         .select()
@@ -100,9 +102,10 @@ const Index = () => {
       if (error) throw error;
 
       if (data) {
-        const newMedication = {
+        const newMedication: Medication = {
           ...medication,
           id: data.id,
+          completed: false,
         };
         setMedications([...medications, newMedication]);
         toast({
