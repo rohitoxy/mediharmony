@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,33 +32,10 @@ export const useMedications = (initialMedications: Medication[]) => {
     try {
       console.log("Completing medication with ID:", medication.id);
       
-      const { data: medData, error: fetchError } = await supabase
-        .from('medications')
-        .select('id')
-        .eq('patient_id', medication.patientId)
-        .eq('room_number', medication.roomNumber)
-        .eq('medicine_name', medication.medicineName)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('Error fetching medication:', fetchError);
-        throw fetchError;
-      }
-
-      if (!medData) {
-        console.error('Medication not found in database');
-        toast({
-          title: "Error",
-          description: "Could not find the medication in the database",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('medications')
         .update({ completed: true })
-        .eq('id', medData.id);
+        .eq('id', medication.id);
 
       if (error) throw error;
 
@@ -85,33 +63,10 @@ export const useMedications = (initialMedications: Medication[]) => {
     try {
       console.log("Deleting medication with ID:", medication.id);
       
-      const { data: medData, error: fetchError } = await supabase
-        .from('medications')
-        .select('id')
-        .eq('patient_id', medication.patientId)
-        .eq('room_number', medication.roomNumber)
-        .eq('medicine_name', medication.medicineName)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('Error fetching medication:', fetchError);
-        throw fetchError;
-      }
-
-      if (!medData) {
-        console.error('Medication not found in database');
-        toast({
-          title: "Error",
-          description: "Could not find the medication in the database",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('medications')
         .delete()
-        .eq('id', medData.id);
+        .eq('id', medication.id);
 
       if (error) throw error;
 

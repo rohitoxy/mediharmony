@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -47,13 +46,80 @@ const Index = () => {
       setSession(session);
     });
 
+    // Fetch medications from database
+    const fetchMedications = async () => {
+      const { data, error } = await supabase
+        .from('medications')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching medications:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch medications",
+          variant: "destructive",
+        });
+      } else if (data) {
+        setMedications(data.map(med => ({
+          ...med,
+          id: med.id.toString(),
+          patientId: med.patient_id,
+          medicineName: med.medicine_name,
+          roomNumber: med.room_number,
+          durationDays: med.duration_days,
+          foodTiming: med.food_timing,
+          time: med.notification_time,
+        })));
+      }
+    };
+
+    fetchMedications();
+
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
-  const handleMedicationAdd = (medication: Medication) => {
-    setMedications([...medications, medication]);
+  const handleMedicationAdd = async (medication: Medication) => {
+    try {
+      const { data, error } = await supabase
+        .from('medications')
+        .insert([
+          {
+            patient_id: medication.patientId,
+            room_number: medication.roomNumber,
+            medicine_name: medication.medicineName,
+            dosage: medication.dosage,
+            duration_days: medication.durationDays,
+            food_timing: medication.foodTiming,
+            notification_time: medication.time,
+            notes: medication.notes,
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const newMedication = {
+          ...medication,
+          id: data.id.toString(),
+        };
+        setMedications([...medications, newMedication]);
+        toast({
+          title: "Success",
+          description: "Medication added successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error adding medication:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add medication",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLogout = async () => {
