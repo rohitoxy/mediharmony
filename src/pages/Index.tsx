@@ -19,7 +19,7 @@ interface Medication {
   durationDays: number;
   foodTiming: string;
   time: string;
-  notes: string;
+  notes?: string;
 }
 
 const Index = () => {
@@ -57,7 +57,7 @@ const Index = () => {
         });
       } else if (data) {
         const mappedMedications = data.map(med => ({
-          id: med.id.toString(),
+          id: med.id,
           patientId: med.patient_id,
           medicineName: med.medicine_name,
           roomNumber: med.room_number,
@@ -65,7 +65,7 @@ const Index = () => {
           foodTiming: med.food_timing,
           time: med.notification_time,
           dosage: med.dosage,
-          notes: med.notes || "",
+          notes: med.notes || "", // Handle notes being undefined
         }));
         setMedications(mappedMedications);
       }
@@ -91,7 +91,7 @@ const Index = () => {
             duration_days: medication.durationDays,
             food_timing: medication.foodTiming,
             notification_time: medication.time,
-            notes: medication.notes,
+            notes: medication.notes || "", // Handle notes being undefined
           }
         ])
         .select()
@@ -102,7 +102,7 @@ const Index = () => {
       if (data) {
         const newMedication = {
           ...medication,
-          id: data.id.toString(),
+          id: data.id,
         };
         setMedications([...medications, newMedication]);
         toast({

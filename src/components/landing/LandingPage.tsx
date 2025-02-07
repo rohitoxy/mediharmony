@@ -4,7 +4,7 @@ import { Pill, Stethoscope, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LandingPageProps {
-  onInterfaceSelect: (interface: "doctor" | "nurse") => void;
+  onInterfaceSelect: (interfaceType: "doctor" | "nurse") => void;
 }
 
 const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
