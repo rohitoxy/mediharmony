@@ -18,6 +18,7 @@ export type Database = {
           food_timing: string
           id: string
           medicine_name: string
+          notes: string | null
           notification_time: string
           patient_id: string
           room_number: string
@@ -31,6 +32,7 @@ export type Database = {
           food_timing: string
           id?: string
           medicine_name: string
+          notes?: string | null
           notification_time: string
           patient_id: string
           room_number: string
@@ -44,6 +46,7 @@ export type Database = {
           food_timing?: string
           id?: string
           medicine_name?: string
+          notes?: string | null
           notification_time?: string
           patient_id?: string
           room_number?: string
