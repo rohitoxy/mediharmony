@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { LogIn, UserPlus, Mail, Lock } from "lucide-react";
 
 const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isSignUp?: boolean }) => {
   const [email, setEmail] = useState("");
@@ -69,10 +71,14 @@ const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isS
   };
 
   return (
-    <Card className="p-6 w-full shadow-lg bg-white">
+    <Card className="p-6 w-full shadow-lg bg-white relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full" />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="flex items-center gap-2">
+            <Mail className="w-4 h-4" />
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -84,7 +90,10 @@ const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isS
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="flex items-center gap-2">
+            <Lock className="w-4 h-4" />
+            Password
+          </Label>
           <Input
             id="password"
             type="password"
@@ -95,8 +104,22 @@ const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isS
           />
         </div>
 
-        <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
-          {loading ? (isSignUp ? "Creating Account..." : "Logging in...") : (isSignUp ? "Create Account" : "Login")}
+        <Button 
+          type="submit" 
+          className="w-full bg-primary hover:bg-primary/90 gap-2" 
+          disabled={loading}
+        >
+          {isSignUp ? (
+            <>
+              <UserPlus className="w-4 h-4" />
+              {loading ? "Creating Account..." : "Create Account"}
+            </>
+          ) : (
+            <>
+              <LogIn className="w-4 h-4" />
+              {loading ? "Logging in..." : "Login"}
+            </>
+          )}
         </Button>
       </form>
     </Card>

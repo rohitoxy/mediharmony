@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, Clock, DoorClosed, Pill, Calendar, AlarmClock, StickyNote } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -57,12 +59,19 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
 
   return (
     <div className="p-6 max-w-2xl mx-auto animate-fade-in">
-      <Card className="p-6 shadow-lg bg-white">
-        <h2 className="text-2xl font-semibold mb-6 text-center text-primary">Add Medication Schedule</h2>
+      <Card className="p-6 shadow-lg bg-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full" />
+        <h2 className="text-2xl font-semibold mb-6 text-center text-primary flex items-center justify-center gap-2">
+          <Pill className="w-6 h-6" />
+          Add Medication Schedule
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="patientId">Patient ID</Label>
+              <Label htmlFor="patientId" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Patient ID
+              </Label>
               <Input
                 id="patientId"
                 value={formData.patientId}
@@ -74,7 +83,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="roomNumber">Room Number</Label>
+              <Label htmlFor="roomNumber" className="flex items-center gap-2">
+                <DoorClosed className="w-4 h-4" />
+                Room Number
+              </Label>
               <Input
                 id="roomNumber"
                 value={formData.roomNumber}
@@ -87,7 +99,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="medicineName">Medicine Name</Label>
+            <Label htmlFor="medicineName" className="flex items-center gap-2">
+              <Pill className="w-4 h-4" />
+              Medicine Name
+            </Label>
             <Input
               id="medicineName"
               value={formData.medicineName}
@@ -100,7 +115,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="dosage">Dosage</Label>
+              <Label htmlFor="dosage" className="flex items-center gap-2">
+                <AlarmClock className="w-4 h-4" />
+                Dosage
+              </Label>
               <Input
                 id="dosage"
                 value={formData.dosage}
@@ -112,7 +130,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="durationDays">Duration (Days)</Label>
+              <Label htmlFor="durationDays" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Duration (Days)
+              </Label>
               <Input
                 id="durationDays"
                 type="number"
@@ -127,7 +148,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="foodTiming">Food Timing</Label>
+              <Label htmlFor="foodTiming" className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Food Timing
+              </Label>
               <Select
                 value={formData.foodTiming}
                 onValueChange={(value) => setFormData({ ...formData, foodTiming: value })}
@@ -144,7 +168,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
+              <Label htmlFor="time" className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Time
+              </Label>
               <Input
                 id="time"
                 type="time"
@@ -157,7 +184,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes" className="flex items-center gap-2">
+              <StickyNote className="w-4 h-4" />
+              Notes
+            </Label>
             <Textarea
               id="notes"
               value={formData.notes}
@@ -167,7 +197,8 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
             />
           </div>
 
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white">
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white gap-2">
+            <Pill className="w-4 h-4" />
             Add Medication
           </Button>
         </form>
