@@ -8,34 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Clock, DoorClosed, Pill, Calendar, AlarmClock, StickyNote } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown } from "lucide-react";
-
-// Common medicine names for autocomplete
-const medicines = [
-  "Acetaminophen",
-  "Ibuprofen",
-  "Amoxicillin",
-  "Omeprazole",
-  "Lisinopril",
-  "Metformin",
-  "Amlodipine",
-  "Metoprolol",
-  "Gabapentin",
-  "Sertraline",
-  "Losartan",
-  "Levothyroxine",
-  "Pantoprazole",
-  "Escitalopram",
-  "Hydrochlorothiazide",
-  "Atorvastatin",
-  "Prednisone",
-  "Azithromycin",
-  "Citalopram",
-  "Fluoxetine"
-].sort();
 
 interface Medication {
   id: string;
@@ -51,7 +23,6 @@ interface Medication {
 
 const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
   const { toast } = useToast();
-  const [medicineOpen, setMedicineOpen] = useState(false);
   const [formData, setFormData] = useState({
     patientId: "",
     roomNumber: "",
@@ -85,10 +56,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       notes: "",
     });
   };
-
-  const selectedMedicine = medicines.find(
-    (medicine) => medicine.toLowerCase() === formData.medicineName.toLowerCase()
-  );
 
   return (
     <div className="p-6 max-w-2xl mx-auto animate-fade-in">
@@ -136,45 +103,14 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
               <Pill className="w-4 h-4" />
               Medicine Name
             </Label>
-            <Popover open={medicineOpen} onOpenChange={setMedicineOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={medicineOpen}
-                  className="w-full justify-between text-left font-normal"
-                >
-                  {selectedMedicine || "Select medicine..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search medicine..." />
-                  <CommandEmpty>No medicine found.</CommandEmpty>
-                  <CommandGroup>
-                    {medicines.map((medicine) => (
-                      <CommandItem
-                        key={medicine}
-                        value={medicine}
-                        onSelect={(currentValue) => {
-                          setFormData({ ...formData, medicineName: currentValue });
-                          setMedicineOpen(false);
-                        }}
-                      >
-                        {medicine}
-                        <Check
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            selectedMedicine === medicine ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Input
+              id="medicineName"
+              value={formData.medicineName}
+              onChange={(e) => setFormData({ ...formData, medicineName: e.target.value })}
+              required
+              className="w-full"
+              placeholder="Enter medicine name"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
