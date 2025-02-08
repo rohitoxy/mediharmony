@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,6 +45,9 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   };
 
   const checkMedications = () => {
+    const currentHours = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+    
     medications.forEach((med) => {
       if (med.completed) {
         alertedMedsRef.current.delete(med.id);
@@ -51,13 +55,9 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       }
       
       const [hours, minutes] = med.time.split(":");
-      const medicationTime = new Date();
-      medicationTime.setHours(parseInt(hours), parseInt(minutes), 0);
+      const isExactTime = currentHours === parseInt(hours) && currentMinutes === parseInt(minutes);
 
-      const timeDiff = Math.abs(currentTime.getTime() - medicationTime.getTime());
-      const isWithinAlertWindow = timeDiff <= 1800000; // 30 minutes
-
-      if (isWithinAlertWindow && !alertedMedsRef.current.has(med.id)) {
+      if (isExactTime && !alertedMedsRef.current.has(med.id)) {
         alertedMedsRef.current.add(med.id);
         toast({
           title: "⚠️ Medication Due!",

@@ -1,3 +1,4 @@
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ interface Medication {
   durationDays: number;
   foodTiming: string;
   time: string;
-  notes: string;
+  notes?: string;
   completed?: boolean;
 }
 
@@ -28,12 +29,16 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
 
   const getTimeStatus = (medicationTime: string) => {
     const [hours, minutes] = medicationTime.split(":");
-    const medTime = new Date();
-    medTime.setHours(parseInt(hours), parseInt(minutes), 0);
-    const timeDiff = medTime.getTime() - currentTime.getTime();
+    const currentHours = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
 
-    if (timeDiff < 0) return "past";
-    if (timeDiff < 1800000) return "upcoming"; // 30 minutes
+    if (currentHours > parseInt(hours) || 
+        (currentHours === parseInt(hours) && currentMinutes > parseInt(minutes))) {
+      return "past";
+    }
+    if (currentHours === parseInt(hours) && currentMinutes === parseInt(minutes)) {
+      return "upcoming";
+    }
     return "future";
   };
 
