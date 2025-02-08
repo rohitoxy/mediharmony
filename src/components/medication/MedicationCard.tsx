@@ -1,7 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, User, DoorClosed, Pill, Check, Trash2 } from "lucide-react";
+import { Clock, User, DoorClosed, Pill, Check, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 interface MedicationCardProps {
   medication: {
@@ -22,18 +24,23 @@ interface MedicationCardProps {
 }
 
 const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: MedicationCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const isAlertActive = timeStatus === "upcoming" && !medication.completed;
 
   return (
-    <Card className={`p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white 
-      ${medication.completed ? 'opacity-60' : ''}
-      ${isAlertActive ? 'animate-pulse border-2 border-red-500' : ''}
-    `}>
-      <div className="space-y-4">
+    <Card 
+      className={`shadow-lg hover:shadow-xl transition-all duration-300 bg-white cursor-pointer
+        ${medication.completed ? 'opacity-60' : ''}
+        ${isAlertActive ? 'animate-pulse border-2 border-red-500' : ''}
+        ${isExpanded ? 'p-6' : 'p-4'}
+      `}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      <div className="space-y-2">
         <div className="flex justify-between items-start">
           <Badge
             variant="outline"
-            className={`mb-2 ${
+            className={`${
               medication.completed
                 ? "bg-green-100 text-green-800"
                 : timeStatus === "upcoming"
@@ -43,7 +50,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
                 : "bg-primary text-white"
             }`}
           >
-            <Clock className="w-4 h-4 mr-1" />
+            <Clock className="w-3 h-3 mr-1" />
             {medication.time}
           </Badge>
           <div className="flex gap-2">
@@ -51,48 +58,71 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
               <Button
                 variant="outline"
                 size="icon"
-                onClick={onComplete}
-                className={`h-8 w-8 ${isAlertActive ? 'animate-bounce' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onComplete();
+                }}
+                className={`h-7 w-7 ${isAlertActive ? 'animate-bounce' : ''}`}
                 title="Mark as completed"
               >
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-3 w-3 text-green-600" />
               </Button>
             )}
             <Button
               variant="outline"
               size="icon"
-              onClick={onDelete}
-              className="h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="h-7 w-7"
               title="Delete medication"
             >
-              <Trash2 className="h-4 w-4 text-red-600" />
+              <Trash2 className="h-3 w-3 text-red-600" />
             </Button>
           </div>
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center text-gray-600">
-            <User className="w-4 h-4 mr-2" />
-            <span>Patient ID: {medication.patientId}</span>
-          </div>
-          <div className="flex items-center text-gray-600">
-            <DoorClosed className="w-4 h-4 mr-2" />
-            <span>Room: {medication.roomNumber}</span>
-          </div>
-          <div className="flex items-center text-gray-600">
-            <Pill className="w-4 h-4 mr-2" />
-            <span>{medication.medicineName}</span>
-          </div>
+
+        <div className="flex items-center text-gray-600">
+          <Pill className="w-3 h-3 mr-1" />
+          <span className="text-sm font-medium truncate">{medication.medicineName}</span>
         </div>
 
-        <div className="space-y-1">
-          <p className="text-sm text-gray-600">Dosage: {medication.dosage}</p>
-          <p className="text-sm text-gray-600">Duration: {medication.durationDays} days</p>
-          <p className="text-sm text-gray-600">Timing: {medication.foodTiming} food</p>
-        </div>
+        {!isExpanded ? (
+          <div className="flex items-center justify-between text-gray-600 text-sm">
+            <div className="flex items-center">
+              <DoorClosed className="w-3 h-3 mr-1" />
+              <span>Room {medication.roomNumber}</span>
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </div>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <div className="flex items-center text-gray-600">
+                <User className="w-3 h-3 mr-1" />
+                <span className="text-sm">Patient ID: {medication.patientId}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <DoorClosed className="w-3 h-3 mr-1" />
+                <span className="text-sm">Room: {medication.roomNumber}</span>
+              </div>
+            </div>
 
-        {medication.notes && (
-          <p className="text-sm text-muted-foreground border-t pt-2">{medication.notes}</p>
+            <div className="space-y-1 text-sm">
+              <p className="text-gray-600">Dosage: {medication.dosage}</p>
+              <p className="text-gray-600">Duration: {medication.durationDays} days</p>
+              <p className="text-gray-600">Timing: {medication.foodTiming} food</p>
+            </div>
+
+            {medication.notes && (
+              <p className="text-sm text-muted-foreground border-t pt-2">{medication.notes}</p>
+            )}
+            
+            <div className="flex justify-center">
+              <ChevronUp className="w-4 h-4 text-gray-400" />
+            </div>
+          </>
         )}
       </div>
     </Card>
