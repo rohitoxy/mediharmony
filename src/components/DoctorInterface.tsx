@@ -86,6 +86,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     });
   };
 
+  const selectedMedicine = medicines.find(
+    (medicine) => medicine.toLowerCase() === formData.medicineName.toLowerCase()
+  );
+
   return (
     <div className="p-6 max-w-2xl mx-auto animate-fade-in">
       <Card className="p-6 shadow-lg bg-white relative overflow-hidden">
@@ -140,17 +144,15 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                   aria-expanded={medicineOpen}
                   className="w-full justify-between text-left font-normal"
                 >
-                  {formData.medicineName
-                    ? medicines.find((medicine) => medicine.toLowerCase() === formData.medicineName.toLowerCase())
-                    : "Select medicine..."}
+                  {selectedMedicine || "Select medicine..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0">
                 <Command>
-                  <CommandInput placeholder="Search medicine..." className="h-9" />
+                  <CommandInput placeholder="Search medicine..." />
                   <CommandEmpty>No medicine found.</CommandEmpty>
-                  <CommandGroup className="max-h-60 overflow-auto">
+                  <CommandGroup>
                     {medicines.map((medicine) => (
                       <CommandItem
                         key={medicine}
@@ -164,9 +166,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                         <Check
                           className={cn(
                             "ml-auto h-4 w-4",
-                            formData.medicineName.toLowerCase() === medicine.toLowerCase()
-                              ? "opacity-100"
-                              : "opacity-0"
+                            selectedMedicine === medicine ? "opacity-100" : "opacity-0"
                           )}
                         />
                       </CommandItem>
@@ -272,4 +272,3 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
 };
 
 export default DoctorInterface;
-
