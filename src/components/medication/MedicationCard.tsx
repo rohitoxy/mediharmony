@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, User, DoorClosed, Pill, Check, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface MedicationCardProps {
   medication: {
@@ -29,61 +30,57 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
 
   return (
     <Card 
-      className={`shadow-lg hover:shadow-xl transition-all duration-300 bg-white cursor-pointer
+      className={`relative shadow-md hover:shadow-lg transition-all duration-300 bg-white
         ${medication.completed ? 'opacity-60' : ''}
         ${isAlertActive ? 'animate-pulse border-2 border-red-500' : ''}
         ${isExpanded ? 'p-6' : 'p-4'}
       `}
-      onClick={() => setIsExpanded(!isExpanded)}
     >
-      <div className="space-y-2">
-        <div className="flex justify-between items-start">
-          <Badge
-            variant="outline"
-            className={`${
-              medication.completed
-                ? "bg-green-100 text-green-800"
-                : timeStatus === "upcoming"
-                ? "bg-red-500 text-white animate-bounce"
-                : timeStatus === "past"
-                ? "bg-muted"
-                : "bg-primary text-white"
-            }`}
-          >
-            <Clock className="w-3 h-3 mr-1" />
-            {medication.time}
-          </Badge>
-          <div className="flex gap-2">
-            {!medication.completed && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onComplete();
-                }}
-                className={`h-7 w-7 ${isAlertActive ? 'animate-bounce' : ''}`}
-                title="Mark as completed"
-              >
-                <Check className="h-3 w-3 text-green-600" />
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="h-7 w-7"
-              title="Delete medication"
-            >
-              <Trash2 className="h-3 w-3 text-red-600" />
-            </Button>
-          </div>
+      {/* Top Actions */}
+      <div className="absolute top-2 right-2 flex gap-2">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id={`checkbox-${medication.id}`}
+            checked={medication.completed}
+            onCheckedChange={onComplete}
+            className={`h-4 w-4 border-2 ${isAlertActive ? 'animate-bounce' : ''}`}
+          />
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="h-6 w-6 hover:bg-red-100 hover:text-red-600"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
 
-        <div className="flex items-center text-gray-600">
+      {/* Card Content */}
+      <div 
+        className="space-y-3 mt-4 cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <Badge
+          variant="outline"
+          className={`${
+            medication.completed
+              ? "bg-green-100 text-green-800"
+              : timeStatus === "upcoming"
+              ? "bg-red-500 text-white animate-bounce"
+              : timeStatus === "past"
+              ? "bg-muted"
+              : "bg-primary text-white"
+          }`}
+        >
+          <Clock className="w-3 h-3 mr-1" />
+          {medication.time}
+        </Badge>
+
+        <div className="flex items-center text-gray-700">
           <Pill className="w-3 h-3 mr-1" />
           <span className="text-sm font-medium truncate">{medication.medicineName}</span>
         </div>
@@ -97,7 +94,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </div>
         ) : (
-          <>
+          <div className="space-y-3">
             <div className="space-y-2">
               <div className="flex items-center text-gray-600">
                 <User className="w-3 h-3 mr-1" />
@@ -109,10 +106,10 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
               </div>
             </div>
 
-            <div className="space-y-1 text-sm">
-              <p className="text-gray-600">Dosage: {medication.dosage}</p>
-              <p className="text-gray-600">Duration: {medication.durationDays} days</p>
-              <p className="text-gray-600">Timing: {medication.foodTiming} food</p>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>Dosage: {medication.dosage}</p>
+              <p>Duration: {medication.durationDays} days</p>
+              <p>Timing: {medication.foodTiming} food</p>
             </div>
 
             {medication.notes && (
@@ -122,7 +119,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
             <div className="flex justify-center">
               <ChevronUp className="w-4 h-4 text-gray-400" />
             </div>
-          </>
+          </div>
         )}
       </div>
     </Card>
@@ -130,3 +127,4 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
 };
 
 export default MedicationCard;
+
