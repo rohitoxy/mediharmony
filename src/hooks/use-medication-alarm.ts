@@ -13,6 +13,7 @@ interface Medication {
 
 export const useMedicationAlarm = (medications: Medication[]) => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
@@ -20,6 +21,13 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   const soundIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Request notification permission when the component mounts
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        setNotificationsEnabled(permission === 'granted');
+      });
+    }
+
     audioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
     audioRef.current.loop = false;
 
@@ -39,6 +47,21 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       }
     };
   }, [medications]);
+
+  const showNotification = (title: string, body: string) => {
+    if (notificationsEnabled && 'Notification' in window) {
+      try {
+        new Notification(title, {
+          body,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          silent: true, // We're already handling sound separately
+        });
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
+    }
+  };
 
   const playAlarmSequence = () => {
     if (!isSoundEnabled || !audioRef.current) return;
@@ -93,13 +116,19 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       if (isNearTime && !alertedMedsRef.current.has(med.id)) {
         alertedMedsRef.current.add(med.id);
         
-        // Show toast with different variants based on urgency
+        const title = isExactTime ? "🚨 MEDICATION DUE NOW!" : "⚠️ Medication Due Soon!";
+        const body = `Patient ${med.patientId} in Room ${med.roomNumber} needs ${med.medicineName}`;
+        
+        // Show toast notification
         toast({
-          title: isExactTime ? "🚨 MEDICATION DUE NOW!" : "⚠️ Medication Due Soon!",
-          description: `Patient ${med.patientId} in Room ${med.roomNumber} needs ${med.medicineName}`,
+          title,
+          description: body,
           variant: isExactTime ? "destructive" : "default",
           duration: 30000, // Show for 30 seconds
         });
+
+        // Show system notification
+        showNotification(title, body);
 
         if (isExactTime) {
           playAlarmSequence();
@@ -108,12 +137,17 @@ export const useMedicationAlarm = (medications: Medication[]) => {
         // Set up a reminder if the medication isn't marked as completed
         setTimeout(() => {
           if (!med.completed) {
+            const reminderTitle = "⏰ Reminder: Medication Still Due!";
+            const reminderBody = `Patient ${med.patientId} still needs ${med.medicineName}`;
+            
             toast({
-              title: "⏰ Reminder: Medication Still Due!",
-              description: `Patient ${med.patientId} still needs ${med.medicineName}`,
+              title: reminderTitle,
+              description: reminderBody,
               variant: "destructive",
               duration: 30000,
             });
+            
+            showNotification(reminderTitle, reminderBody);
             playAlarmSequence();
           }
         }, 120000); // 2 minutes later
@@ -135,5 +169,6 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     currentTime,
     isSoundEnabled,
     toggleSound,
+    notificationsEnabled,
   };
 };
