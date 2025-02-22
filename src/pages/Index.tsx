@@ -31,20 +31,36 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("Initial session:", session);
       setSession(session);
       setLoading(false);
     });
 
+    // Listen for auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log("Auth state changed:", _event, session);
       setSession(session);
+      
+      if (!session) {
+        // Clear any user-specific state when logged out
+        setMedications([]);
+        setSelectedInterface(null);
+      }
     });
 
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchMedications = async () => {
+      if (!session) return; // Don't fetch if not logged in
+
       const { data, error } = await supabase
         .from('medications')
         .select('*');
@@ -74,11 +90,7 @@ const Index = () => {
     };
 
     fetchMedications();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [toast]);
+  }, [session, toast]);
 
   const handleMedicationAdd = async (medication: Medication) => {
     try {
@@ -125,6 +137,7 @@ const Index = () => {
 
   const handleLogout = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error);
@@ -134,6 +147,7 @@ const Index = () => {
           variant: "destructive",
         });
       } else {
+        setSession(null);
         setSelectedInterface(null);
         toast({
           title: "Success",
@@ -147,6 +161,8 @@ const Index = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
