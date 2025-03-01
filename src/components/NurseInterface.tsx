@@ -1,6 +1,6 @@
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Volume2, VolumeX, Bell, X, Calendar, CheckCircle, Clock, AlertTriangle, Info, Filter } from "lucide-react";
+import { Volume2, VolumeX, Bell, X, Calendar, CheckCircle, Clock, AlertTriangle, Info, Filter, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import MedicationCard from "./medication/MedicationCard";
