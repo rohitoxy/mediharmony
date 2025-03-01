@@ -115,38 +115,6 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
             </motion.div>
           </div>
         </motion.div>
-        
-        {/* Feature Cards */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8"
-        >
-          <div className="bg-white/80 p-4 rounded-lg shadow-sm">
-            <div className="bg-primary/10 p-2 rounded-full w-10 h-10 flex items-center justify-center mb-3">
-              <Check className="w-5 h-5 text-primary" />
-            </div>
-            <h3 className="font-medium text-gray-800">Easy Tracking</h3>
-            <p className="text-sm text-muted-foreground">Track medication schedules efficiently</p>
-          </div>
-          
-          <div className="bg-white/80 p-4 rounded-lg shadow-sm">
-            <div className="bg-primary/10 p-2 rounded-full w-10 h-10 flex items-center justify-center mb-3">
-              <AlertCircle className="w-5 h-5 text-primary" />
-            </div>
-            <h3 className="font-medium text-gray-800">Smart Alerts</h3>
-            <p className="text-sm text-muted-foreground">Never miss an important medication</p>
-          </div>
-          
-          <div className="bg-white/80 p-4 rounded-lg shadow-sm">
-            <div className="bg-primary/10 p-2 rounded-full w-10 h-10 flex items-center justify-center mb-3">
-              <Clock className="w-5 h-5 text-primary" />
-            </div>
-            <h3 className="font-medium text-gray-800">Time Management</h3>
-            <p className="text-sm text-muted-foreground">Optimize your medication schedule</p>
-          </div>
-        </motion.div>
       </div>
       
       <motion.div
