@@ -18,17 +18,17 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
-  const notificationTitle = payload.notification.title;
+  // Create notification options without the renotify property to avoid issues
   const notificationOptions = {
     body: payload.notification.body,
     icon: '/favicon.ico',
     badge: '/favicon.ico',
     data: payload.data,
-    tag: payload.data?.groupKey || 'medication-alert',
-    renotify: true
+    tag: payload.data?.groupKey || 'medication-alert'
+    // No renotify property here - it's not well supported in service workers
   };
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(payload.notification.title, notificationOptions);
 });
 
 // Handle notification click

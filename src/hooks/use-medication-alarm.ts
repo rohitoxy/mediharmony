@@ -23,6 +23,11 @@ interface MedicationAlert {
   acknowledged: boolean;
 }
 
+// Add custom notification options interface to include renotify
+interface ExtendedNotificationOptions extends NotificationOptions {
+  renotify?: boolean;
+}
+
 export const useMedicationAlarm = (medications: Medication[]) => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -234,18 +239,21 @@ export const useMedicationAlarm = (medications: Medication[]) => {
         // Group notifications by priority
         const tag = `mediharmony-${priority}`;
         
-        new Notification(title, {
+        // Use the extended notification options with renotify property
+        const options: ExtendedNotificationOptions = {
           body,
           icon: '/favicon.ico',
           badge: '/favicon.ico',
           tag, // Group by priority
-          renotify: true, // Notify again even if using same tag
+          renotify: true, // Cast to any to avoid TypeScript error
           data: {
             medicationId,
             priority,
             timestamp: Date.now()
           }
-        });
+        };
+        
+        new Notification(title, options);
       } catch (error) {
         console.error('Error showing notification:', error);
       }
