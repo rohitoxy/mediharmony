@@ -1,4 +1,3 @@
-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Volume2, VolumeX, Bell, X, Calendar, CheckCircle, Clock, AlertTriangle, Info, Filter, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useMedications } from "@/hooks/use-medications";
 import { useMedicationAlarm } from "@/hooks/use-medication-alarm";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FullScreenAlert from "./alerts/FullScreenAlert";
 
 interface Medication {
   id: string;
@@ -35,7 +35,9 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     toggleSound, 
     groupedAlerts,
     acknowledgeAlert,
-    highPriorityCount 
+    highPriorityCount,
+    fullScreenAlert,
+    closeFullScreenAlert
   } = useMedicationAlarm(medications);
 
   const getTimeStatus = (medicationTime: string) => {
@@ -60,14 +62,12 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     return true;
   });
 
-  // Function to format time for display
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <div className="p-3 md:p-6 animate-fade-in">
-      {/* Header Section with Date and Time */}
       <div className="mb-6 bg-gradient-to-r from-primary/10 to-accent/5 p-4 rounded-lg shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div className="flex items-center mb-4 md:mb-0">
@@ -127,7 +127,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </div>
       </div>
       
-      {/* Filters */}
       <div className="mb-4 flex items-center space-x-2">
         <Filter className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Filter:</span>
@@ -159,7 +158,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </div>
       </div>
       
-      {/* Status Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-sm flex items-center">
           <div className="bg-primary/10 p-2 rounded-full mr-3">
@@ -196,7 +194,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </div>
       </div>
       
-      {/* Empty State */}
       {filteredMedications.length === 0 && (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
           <div className="bg-muted inline-flex p-4 rounded-full mb-4">
@@ -213,7 +210,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </div>
       )}
       
-      {/* Medication Card Grid */}
       <AnimatePresence>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {filteredMedications.map((medication) => (
@@ -231,7 +227,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </div>
       </AnimatePresence>
 
-      {/* Delete Medication Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -258,7 +253,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Alerts Panel */}
       <AnimatePresence>
         {showAlertsPanel && (
           <motion.div 
@@ -289,7 +283,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
               </div>
               
               <div className="p-4 space-y-4">
-                {/* High Priority Alerts */}
                 {groupedAlerts.high && groupedAlerts.high.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="font-medium text-red-600 flex items-center">
@@ -313,7 +306,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                               className="text-xs"
                               onClick={() => {
                                 acknowledgeAlert(alert.id);
-                                // Find the corresponding medication
                                 const med = medications.find(m => m.id === alert.id);
                                 if (med) handleComplete(med);
                               }}
@@ -328,7 +320,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                   </div>
                 )}
                 
-                {/* Medium Priority Alerts */}
                 {groupedAlerts.medium && groupedAlerts.medium.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="font-medium text-orange-600 flex items-center">
@@ -351,7 +342,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                   </div>
                 )}
                 
-                {/* Low Priority Alerts */}
                 {groupedAlerts.low && groupedAlerts.low.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="font-medium text-blue-600 flex items-center">
@@ -396,6 +386,20 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
           </motion.div>
         )}
       </AnimatePresence>
+
+      {fullScreenAlert && (
+        <FullScreenAlert
+          title={fullScreenAlert.title}
+          message={fullScreenAlert.body}
+          medicationId={fullScreenAlert.id}
+          isOpen={true}
+          onClose={(medId) => {
+            closeFullScreenAlert();
+            const med = medications.find(m => m.id === medId);
+            if (med) handleComplete(med);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { requestNotificationPermission, setupMessageListener } from "@/integrations/firebase/firebase";
@@ -23,7 +22,6 @@ interface MedicationAlert {
   acknowledged: boolean;
 }
 
-// Add custom notification options interface to include renotify
 interface ExtendedNotificationOptions extends NotificationOptions {
   renotify?: boolean;
 }
@@ -34,12 +32,14 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [activeAlerts, setActiveAlerts] = useState<MedicationAlert[]>([]);
+  const [fullScreenAlert, setFullScreenAlert] = useState<MedicationAlert | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const loudAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
   const alertedMedsRef = useRef<Set<string>>(new Set());
   const soundIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const loudSoundIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Firebase notifications
   useEffect(() => {
     const initFirebaseNotifications = async () => {
       try {
@@ -56,7 +56,6 @@ export const useMedicationAlarm = (medications: Medication[]) => {
 
     initFirebaseNotifications();
     
-    // Setup message listener for foreground messages
     const messageUnsubscribe = setupMessageListener((payload) => {
       if (payload.notification) {
         const newAlert: MedicationAlert = {
@@ -70,7 +69,6 @@ export const useMedicationAlarm = (medications: Medication[]) => {
         
         setActiveAlerts((prevAlerts) => [...prevAlerts, newAlert]);
         
-        // Show toast for foreground message
         toast({
           title: payload.notification.title,
           description: payload.notification.body,
@@ -84,11 +82,13 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       }
     });
 
-    // Initialize audio
     audioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
     audioRef.current.loop = false;
+    
+    loudAudioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2887/2887-preview.mp3");
+    loudAudioRef.current.loop = false;
+    loudAudioRef.current.volume = 1.0;
 
-    // Check medications every second
     const timer = setInterval(() => {
       setCurrentTime(new Date());
       checkMedications();
@@ -101,30 +101,33 @@ export const useMedicationAlarm = (medications: Medication[]) => {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      if (loudAudioRef.current) {
+        loudAudioRef.current.pause();
+        loudAudioRef.current = null;
+      }
       if (soundIntervalRef.current) {
         clearInterval(soundIntervalRef.current);
+      }
+      if (loudSoundIntervalRef.current) {
+        clearInterval(loudSoundIntervalRef.current);
       }
     };
   }, [medications]);
 
-  // Play sound alarm sequence
   const playAlarmSequence = useCallback(() => {
     if (!isSoundEnabled || !audioRef.current) return;
 
-    // Play immediately
     audioRef.current.play().catch(error => {
       console.error("Error playing audio:", error);
     });
 
-    // Clear any existing interval
     if (soundIntervalRef.current) {
       clearInterval(soundIntervalRef.current);
     }
 
-    // Set up interval to play sound every 10 seconds for 2 minutes
     let playCount = 0;
     soundIntervalRef.current = setInterval(() => {
-      if (playCount < 12 && audioRef.current) { // 12 times = 2 minutes
+      if (playCount < 12 && audioRef.current) {
         audioRef.current.play().catch(error => {
           console.error("Error playing audio:", error);
         });
@@ -132,10 +135,33 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       } else if (soundIntervalRef.current) {
         clearInterval(soundIntervalRef.current);
       }
-    }, 10000); // Every 10 seconds
+    }, 10000);
   }, [isSoundEnabled]);
 
-  // Check medications for alerts
+  const playLoudAlarmSequence = useCallback(() => {
+    if (!isSoundEnabled || !loudAudioRef.current) return;
+
+    loudAudioRef.current.play().catch(error => {
+      console.error("Error playing loud audio:", error);
+    });
+
+    if (loudSoundIntervalRef.current) {
+      clearInterval(loudSoundIntervalRef.current);
+    }
+
+    let playCount = 0;
+    loudSoundIntervalRef.current = setInterval(() => {
+      if (playCount < 24 && loudAudioRef.current) {
+        loudAudioRef.current.play().catch(error => {
+          console.error("Error playing loud audio:", error);
+        });
+        playCount++;
+      } else if (loudSoundIntervalRef.current) {
+        clearInterval(loudSoundIntervalRef.current);
+      }
+    }, 5000);
+  }, [isSoundEnabled]);
+
   const checkMedications = useCallback(() => {
     const currentHours = currentTime.getHours();
     const currentMinutes = currentTime.getMinutes();
@@ -144,8 +170,9 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       if (med.completed) {
         alertedMedsRef.current.delete(med.id);
         
-        // Remove any active alerts for this medication
         setActiveAlerts(prev => prev.filter(alert => alert.id !== med.id));
+        setFullScreenAlert(prev => prev?.id === med.id ? null : prev);
+        
         return;
       }
       
@@ -153,7 +180,6 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       const targetHour = parseInt(hours);
       const targetMinute = parseInt(minutes);
       
-      // Check if we're within 5 minutes of the target time
       const isNearTime = (
         (currentHours === targetHour && Math.abs(currentMinutes - targetMinute) <= 5) ||
         (currentHours === targetHour - 1 && targetMinute < 5 && currentMinutes >= 55) ||
@@ -161,12 +187,12 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       );
 
       const isExactTime = currentHours === targetHour && currentMinutes === targetMinute;
+      
       const isOverdue = (
         currentHours > targetHour || 
         (currentHours === targetHour && currentMinutes > targetMinute + 5)
       );
 
-      // Determine priority based on timing
       const getPriority = (): 'high' | 'medium' | 'low' => {
         if (isExactTime || isOverdue) return 'high';
         if (isNearTime) return 'medium';
@@ -182,7 +208,6 @@ export const useMedicationAlarm = (medications: Medication[]) => {
                     "⚠️ Medication Due Soon!";
         const body = `Patient ${med.patientId} in Room ${med.roomNumber} needs ${med.medicineName} ${med.dosage || ''}`;
         
-        // Create new alert
         const newAlert: MedicationAlert = {
           id: med.id,
           title,
@@ -192,10 +217,8 @@ export const useMedicationAlarm = (medications: Medication[]) => {
           acknowledged: false
         };
         
-        // Add to active alerts
         setActiveAlerts(prev => [...prev, newAlert]);
         
-        // Show toast notification
         toast({
           title,
           description: body,
@@ -203,15 +226,15 @@ export const useMedicationAlarm = (medications: Medication[]) => {
           duration: 30000,
         });
 
-        // Show system notification
         showNotification(title, body, med.id, priority);
 
-        // Play alarm sound for exact time and overdue medications
-        if (isExactTime || isOverdue) {
+        if (isExactTime) {
+          setFullScreenAlert(newAlert);
+          playLoudAlarmSequence();
+        } else if (isOverdue) {
           playAlarmSequence();
         }
 
-        // Set up a reminder if the medication isn't marked as completed
         setTimeout(() => {
           if (!med.completed) {
             const reminderTitle = "⏰ Reminder: Medication Still Due!";
@@ -225,27 +248,37 @@ export const useMedicationAlarm = (medications: Medication[]) => {
             });
             
             showNotification(reminderTitle, reminderBody, med.id, 'high');
-            playAlarmSequence();
+            
+            if (isExactTime) {
+              setFullScreenAlert({
+                id: med.id,
+                title: reminderTitle,
+                body: reminderBody,
+                timestamp: Date.now(),
+                priority: 'high',
+                acknowledged: false
+              });
+              playLoudAlarmSequence();
+            } else {
+              playAlarmSequence();
+            }
           }
-        }, 120000); // 2 minutes later
+        }, 120000);
       }
     });
-  }, [currentTime, medications, toast, playAlarmSequence]);
+  }, [currentTime, medications, toast, playAlarmSequence, playLoudAlarmSequence, showNotification]);
 
-  // Show browser notification
   const showNotification = useCallback((title: string, body: string, medicationId: string, priority: 'high' | 'medium' | 'low') => {
     if (notificationsEnabled && 'Notification' in window) {
       try {
-        // Group notifications by priority
         const tag = `mediharmony-${priority}`;
         
-        // Use the extended notification options with renotify property
         const options: ExtendedNotificationOptions = {
           body,
           icon: '/favicon.ico',
           badge: '/favicon.ico',
-          tag, // Group by priority
-          renotify: true, // Cast to any to avoid TypeScript error
+          tag,
+          renotify: true,
           data: {
             medicationId,
             priority,
@@ -260,7 +293,17 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     }
   }, [notificationsEnabled]);
 
-  // Mark an alert as acknowledged
+  const closeFullScreenAlert = useCallback(() => {
+    setFullScreenAlert(null);
+    
+    if (loudAudioRef.current) {
+      loudAudioRef.current.pause();
+      if (loudSoundIntervalRef.current) {
+        clearInterval(loudSoundIntervalRef.current);
+      }
+    }
+  }, []);
+
   const acknowledgeAlert = useCallback((alertId: string) => {
     setActiveAlerts(prev => 
       prev.map(alert => 
@@ -269,20 +312,30 @@ export const useMedicationAlarm = (medications: Medication[]) => {
           : alert
       )
     );
-  }, []);
+    
+    if (fullScreenAlert?.id === alertId) {
+      closeFullScreenAlert();
+    }
+  }, [fullScreenAlert, closeFullScreenAlert]);
 
-  // Toggle sound
   const toggleSound = useCallback(() => {
     setIsSoundEnabled(!isSoundEnabled);
-    if (!isSoundEnabled && audioRef.current) {
-      audioRef.current.pause();
-      if (soundIntervalRef.current) {
-        clearInterval(soundIntervalRef.current);
+    if (!isSoundEnabled) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        if (soundIntervalRef.current) {
+          clearInterval(soundIntervalRef.current);
+        }
+      }
+      if (loudAudioRef.current) {
+        loudAudioRef.current.pause();
+        if (loudSoundIntervalRef.current) {
+          clearInterval(loudSoundIntervalRef.current);
+        }
       }
     }
   }, [isSoundEnabled]);
 
-  // Group alerts by priority
   const groupedAlerts = activeAlerts.reduce((acc, alert) => {
     if (!acc[alert.priority]) {
       acc[alert.priority] = [];
@@ -299,6 +352,8 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     activeAlerts,
     groupedAlerts,
     acknowledgeAlert,
-    highPriorityCount: groupedAlerts.high?.length || 0
+    highPriorityCount: groupedAlerts.high?.length || 0,
+    fullScreenAlert,
+    closeFullScreenAlert
   };
 };
