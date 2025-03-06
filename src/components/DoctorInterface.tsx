@@ -379,14 +379,17 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                         whileTap="tap"
                         variants={inputVariants}
                       >
-                        <Input
-                          id="time"
-                          type="time"
-                          value={formData.time}
-                          onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                          required
-                          className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                        />
+                        <div className="w-full relative">
+                          <Input
+                            id="time"
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                            required
+                            className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
+                            style={{ colorScheme: "light" }}
+                          />
+                        </div>
                       </motion.div>
                     </div>
                   </div>
