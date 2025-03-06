@@ -114,6 +114,31 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     };
   }, [medications]);
 
+  const showNotification = useCallback((title: string, body: string, medicationId: string, priority: 'high' | 'medium' | 'low') => {
+    if (notificationsEnabled && 'Notification' in window) {
+      try {
+        const tag = `mediharmony-${priority}`;
+        
+        const options: ExtendedNotificationOptions = {
+          body,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag,
+          renotify: true,
+          data: {
+            medicationId,
+            priority,
+            timestamp: Date.now()
+          }
+        };
+        
+        new Notification(title, options);
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
+    }
+  }, [notificationsEnabled]);
+
   const playAlarmSequence = useCallback(() => {
     if (!isSoundEnabled || !audioRef.current) return;
 
@@ -267,31 +292,6 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       }
     });
   }, [currentTime, medications, toast, playAlarmSequence, playLoudAlarmSequence, showNotification]);
-
-  const showNotification = useCallback((title: string, body: string, medicationId: string, priority: 'high' | 'medium' | 'low') => {
-    if (notificationsEnabled && 'Notification' in window) {
-      try {
-        const tag = `mediharmony-${priority}`;
-        
-        const options: ExtendedNotificationOptions = {
-          body,
-          icon: '/favicon.ico',
-          badge: '/favicon.ico',
-          tag,
-          renotify: true,
-          data: {
-            medicationId,
-            priority,
-            timestamp: Date.now()
-          }
-        };
-        
-        new Notification(title, options);
-      } catch (error) {
-        console.error('Error showing notification:', error);
-      }
-    }
-  }, [notificationsEnabled]);
 
   const closeFullScreenAlert = useCallback(() => {
     setFullScreenAlert(null);
