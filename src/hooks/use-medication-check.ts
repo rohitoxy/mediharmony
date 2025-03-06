@@ -9,7 +9,7 @@ export const useMedicationCheck = (
   isSoundEnabled: boolean,
   notificationsEnabled: boolean,
   setFullScreenAlert: (alert: MedicationAlert | null) => void,
-  setActiveAlerts: (alerts: MedicationAlert[] | ((prev: MedicationAlert[]) => MedicationAlert[])) => void,
+  setActiveAlerts: React.Dispatch<React.SetStateAction<MedicationAlert[]>>,
   playAlarmSequence: () => void,
   playLoudAlarmSequence: () => void
 ) => {
