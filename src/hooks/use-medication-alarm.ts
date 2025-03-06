@@ -206,8 +206,8 @@ export const useMedicationAlarm = (medications: Medication[]) => {
         // Show system notification
         showNotification(title, body, med.id, priority);
 
-        // Play sound for high priority
-        if (priority === 'high') {
+        // Play alarm sound for exact time and overdue medications
+        if (isExactTime || isOverdue) {
           playAlarmSequence();
         }
 
