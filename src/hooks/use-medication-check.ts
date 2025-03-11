@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Medication, MedicationAlert } from "@/types/medication";
 import { useToast } from "@/hooks/use-toast";
