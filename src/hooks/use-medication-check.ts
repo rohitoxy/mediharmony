@@ -33,7 +33,7 @@ export const useMedicationCheck = (
       if (med.completed) {
         alertedMedsRef.current.delete(med.id);
         
-        setActiveAlerts(prev => prev.filter(alert => alert.id !== med.id));
+        setActiveAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== med.id));
         setFullScreenAlert(prev => prev?.id === med.id ? null : prev);
         
         return;
@@ -80,7 +80,7 @@ export const useMedicationCheck = (
           acknowledged: false
         };
         
-        setActiveAlerts(prev => [...prev, newAlert]);
+        setActiveAlerts(prevAlerts => [...prevAlerts, newAlert]);
         
         toast({
           title,
