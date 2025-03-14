@@ -7,22 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  User, 
-  Clock, 
-  DoorClosed, 
-  Pill, 
-  Calendar, 
-  AlarmClock, 
-  StickyNote, 
-  Check,
-  Heart,
-  Activity,
-  StethoscopeIcon,
-  Shield,
-  Sparkles
-} from "lucide-react";
+import { ArrowLeft, Bell, Calendar, Pill, Plus, X } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -42,10 +27,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     patientId: "",
     roomNumber: "",
     medicineName: "",
-    dosage: "",
-    durationDays: 1,
-    foodTiming: "before",
-    time: "",
+    dosage: "1",
+    durationDays: 30,
+    foodTiming: "with",
+    time: "10:00",
     notes: "",
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -59,379 +44,249 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     onMedicationAdd(medication);
     setFormSubmitted(true);
     
-    // Show success toast with animation
     toast({
       title: "Medication Added",
       description: "The medication has been successfully added to the nurse's schedule.",
-      action: (
-        <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
-          <Check className="h-4 w-4 text-green-600" />
-        </div>
-      ),
     });
     
-    // Reset form after showing animation
     setTimeout(() => {
       setFormData({
         patientId: "",
         roomNumber: "",
         medicineName: "",
-        dosage: "",
-        durationDays: 1,
-        foodTiming: "before",
-        time: "",
+        dosage: "1",
+        durationDays: 30,
+        foodTiming: "with",
+        time: "10:00",
         notes: "",
       });
       setFormSubmitted(false);
     }, 1000);
   };
 
-  const inputVariants = {
-    focus: { scale: 1.02, boxShadow: "0 0 0 2px #4A9F8F33" },
-    tap: { scale: 0.98 }
-  };
+  const FoodTimingOption = ({ value, isSelected, label, onClick }: { 
+    value: string, 
+    isSelected: boolean, 
+    label: string,
+    onClick: () => void 
+  }) => (
+    <div 
+      className={`flex items-center justify-center p-4 rounded-md cursor-pointer transition-all ${
+        isSelected 
+          ? "bg-green-500 text-white" 
+          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+      }`}
+      onClick={onClick}
+    >
+      <div className="flex flex-col items-center">
+        <div className="mb-1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 5h18v1H3z" fill={isSelected ? "white" : "currentColor"} />
+            <path fillRule="evenodd" clipRule="evenodd" d="M7 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-2 4a2 2 0 1 1 4 0 2 2 0 0 1-4 0z" fill={isSelected ? "white" : "currentColor"} />
+            <path d="M17 8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V8z" fill={isSelected ? "white" : "currentColor"} />
+            <path fillRule="evenodd" clipRule="evenodd" d="M17 5c-1.1 0-2 .9-2 2v2.535c.468-.344 1-.598 1.567-.738A3.503 3.503 0 0 1 20 12a3.503 3.503 0 0 1-3.433 3.203c-.567-.14-1.099-.394-1.567-.738V17c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-2z" fill={isSelected ? "white" : "currentColor"} />
+          </svg>
+        </div>
+        {label}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="p-6 max-w-2xl mx-auto animate-fade-in">
-      <Card className="relative overflow-hidden bg-white shadow-xl rounded-xl border-none">
-        {/* Background graphic elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/10 rounded-bl-full z-0" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-accent/10 to-primary/20 rounded-tr-full z-0" />
-        
-        {/* Floating pills background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(4)].map((_, index) => (
+    <div className="max-w-md mx-auto">
+      <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+        <AnimatePresence>
+          {formSubmitted ? (
             <motion.div
-              key={index}
-              className="absolute text-primary/5"
-              initial={{ 
-                x: Math.random() * 100, 
-                y: Math.random() * 100,
-                opacity: 0.3,
-                scale: 0.5 + Math.random() * 0.5
-              }}
-              animate={{ 
-                x: Math.random() * 100 - 50, 
-                y: Math.random() * 100 - 50,
-                opacity: 0.1 + Math.random() * 0.2,
-                rotate: Math.random() * 360
-              }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 15 + Math.random() * 10,
-                repeatType: "reverse" 
-              }}
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-6 flex flex-col items-center justify-center h-full"
             >
-              <Pill size={20 + Math.random() * 30} />
-            </motion.div>
-          ))}
-        </div>
-        
-        {/* Content wrapper with z-index to appear above decorative elements */}
-        <div className="relative z-10 p-8">
-          {/* Header with animation */}
-          <motion.div 
-            className="flex items-center justify-center gap-3 mb-8"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              className="bg-gradient-to-r from-primary to-accent p-3 rounded-full text-white shadow-lg"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <StethoscopeIcon className="w-8 h-8" />
-            </motion.div>
-            <div className="text-center">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Medication Scheduler
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                Create personalized medication schedules for patients
-              </p>
-            </div>
-          </motion.div>
-          
-          <AnimatePresence>
-            {formSubmitted ? (
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="flex flex-col items-center justify-center py-10"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-4"
               >
-                <motion.div
-                  className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                >
-                  <Check className="w-10 h-10 text-green-600" />
-                </motion.div>
-                <h3 className="text-xl font-medium text-gray-800 mb-2">Schedule Created!</h3>
-                <p className="text-muted-foreground text-center mb-6">
-                  The medication has been added to the nurse's schedule
-                </p>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    onClick={() => setFormSubmitted(false)}
-                    className="gap-2 bg-primary hover:bg-primary/90"
-                  >
-                    <Pill className="w-4 h-4" />
-                    Add Another Medication
-                  </Button>
-                </motion.div>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12l5 5L20 7" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </motion.div>
-            ) : (
-              <motion.form 
-                onSubmit={handleSubmit}
-                className="space-y-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+              <h3 className="text-xl font-medium text-gray-800 mb-2">Medication Added</h3>
+              <p className="text-gray-500 text-center mb-6">
+                The medication has been successfully added to the nurse's schedule
+              </p>
+              <Button 
+                onClick={() => setFormSubmitted(false)}
+                className="w-full bg-green-500 hover:bg-green-600 text-white"
               >
-                {/* Patient Info Section */}
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-primary/10 p-1.5 rounded-full">
-                      <User className="w-4 h-4 text-primary" />
-                    </div>
-                    <h3 className="font-medium text-gray-700">Patient Information</h3>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="patientId" className="flex items-center gap-2 text-gray-600">
-                        <User className="w-4 h-4" />
-                        Patient ID
-                      </Label>
-                      <motion.div
-                        whileFocus="focus"
-                        whileTap="tap"
-                        variants={inputVariants}
-                      >
-                        <Input
-                          id="patientId"
-                          value={formData.patientId}
-                          onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-                          required
-                          className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                          placeholder="Enter patient ID"
-                        />
-                      </motion.div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="roomNumber" className="flex items-center gap-2 text-gray-600">
-                        <DoorClosed className="w-4 h-4" />
-                        Room Number
-                      </Label>
-                      <motion.div
-                        whileFocus="focus"
-                        whileTap="tap"
-                        variants={inputVariants}
-                      >
-                        <Input
-                          id="roomNumber"
-                          value={formData.roomNumber}
-                          onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
-                          required
-                          className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                          placeholder="Enter room number"
-                        />
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Medication Details Section */}
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-primary/10 p-1.5 rounded-full">
-                      <Pill className="w-4 h-4 text-primary" />
-                    </div>
-                    <h3 className="font-medium text-gray-700">Medication Details</h3>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="medicineName" className="flex items-center gap-2 text-gray-600">
-                        <Pill className="w-4 h-4" />
-                        Medicine Name
-                      </Label>
-                      <motion.div
-                        whileFocus="focus"
-                        whileTap="tap"
-                        variants={inputVariants}
-                      >
-                        <Input
-                          id="medicineName"
-                          value={formData.medicineName}
-                          onChange={(e) => setFormData({ ...formData, medicineName: e.target.value })}
-                          required
-                          className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                          placeholder="Enter medicine name"
-                        />
-                      </motion.div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="dosage" className="flex items-center gap-2 text-gray-600">
-                          <AlarmClock className="w-4 h-4" />
-                          Dosage
-                        </Label>
-                        <motion.div
-                          whileFocus="focus"
-                          whileTap="tap"
-                          variants={inputVariants}
-                        >
-                          <Input
-                            id="dosage"
-                            value={formData.dosage}
-                            onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
-                            required
-                            className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                            placeholder="Enter dosage"
-                          />
-                        </motion.div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="durationDays" className="flex items-center gap-2 text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          Duration (Days)
-                        </Label>
-                        <motion.div
-                          whileFocus="focus"
-                          whileTap="tap"
-                          variants={inputVariants}
-                        >
-                          <Input
-                            id="durationDays"
-                            type="number"
-                            min="1"
-                            value={formData.durationDays}
-                            onChange={(e) => setFormData({ ...formData, durationDays: parseInt(e.target.value) })}
-                            required
-                            className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                          />
-                        </motion.div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Schedule Section */}
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-primary/10 p-1.5 rounded-full">
-                      <Clock className="w-4 h-4 text-primary" />
-                    </div>
-                    <h3 className="font-medium text-gray-700">Schedule Information</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="foodTiming" className="flex items-center gap-2 text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        Food Timing
-                      </Label>
-                      <Select
-                        value={formData.foodTiming}
-                        onValueChange={(value) => setFormData({ ...formData, foodTiming: value })}
-                      >
-                        <motion.div
-                          whileHover="focus"
-                          whileTap="tap"
-                          variants={inputVariants}
-                        >
-                          <SelectTrigger className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary">
-                            <SelectValue placeholder="Select timing" />
-                          </SelectTrigger>
-                        </motion.div>
-                        <SelectContent>
-                          <SelectItem value="before" className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-orange-500 mr-1"></span> Before Food
-                          </SelectItem>
-                          <SelectItem value="after" className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-blue-500 mr-1"></span> After Food
-                          </SelectItem>
-                          <SelectItem value="with" className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-green-500 mr-1"></span> With Food
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="time" className="flex items-center gap-2 text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        Time
-                      </Label>
-                      <motion.div
-                        whileFocus="focus"
-                        whileTap="tap"
-                        variants={inputVariants}
-                      >
-                        <div className="w-full relative">
-                          <Input
-                            id="time"
-                            type="time"
-                            value={formData.time}
-                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                            required
-                            className="w-full transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
-                            style={{ colorScheme: "light" }}
-                          />
-                        </div>
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes" className="flex items-center gap-2 text-gray-600">
-                    <StickyNote className="w-4 h-4" />
-                    Notes
-                  </Label>
-                  <motion.div
-                    whileFocus="focus"
-                    whileTap="tap"
-                    variants={inputVariants}
-                  >
-                    <Textarea
-                      id="notes"
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="w-full min-h-[100px] transition-all border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-                      placeholder="Enter any additional notes"
-                    />
-                  </motion.div>
-                </div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="pt-4"
+                Add Another Medication
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.form 
+              onSubmit={handleSubmit}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-6 space-y-6"
+            >
+              <div className="flex items-center mb-4">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full"
+                  onClick={() => window.history.back()}
                 >
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-medium py-3 h-auto text-base shadow-lg gap-2"
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <h1 className="text-2xl font-bold ml-2">Add Plan</h1>
+              </div>
+
+              {/* Pills name section */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Pills name</Label>
+                <div className="flex items-center">
+                  <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
+                    <Pill className="h-5 w-5 mr-3 text-gray-500" />
+                    <Input
+                      value={formData.medicineName}
+                      onChange={(e) => setFormData({ ...formData, medicineName: e.target.value })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
+                      placeholder="Medicine name"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="rounded-full absolute right-2 text-green-500"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 17L17 7M7 7L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount & How long section */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Amount & How long?</Label>
+                <div className="flex gap-3">
+                  <div className="bg-gray-100 rounded-xl p-3 flex items-center flex-grow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-3 text-gray-500">
+                      <path d="M12 8v8m-4-4h8M7.8 4.8L16.2 19.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <Input
+                      type="number"
+                      value={formData.dosage}
+                      onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 w-16 h-auto text-base"
+                      min="1"
+                    />
+                    <span className="text-gray-500 ml-2">pills</span>
+                  </div>
+                  <div className="bg-gray-100 rounded-xl p-3 flex items-center flex-grow">
+                    <Calendar className="h-5 w-5 mr-3 text-gray-500" />
+                    <Input
+                      type="number"
+                      value={formData.durationDays}
+                      onChange={(e) => setFormData({ ...formData, durationDays: parseInt(e.target.value) })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 w-16 h-auto text-base"
+                      min="1"
+                    />
+                    <span className="text-gray-500 ml-2">days</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hidden fields that are not in the design but needed for functionality */}
+              <div className="hidden">
+                <Input
+                  value={formData.patientId}
+                  onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
+                  required
+                  placeholder="Patient ID"
+                />
+                <Input
+                  value={formData.roomNumber}
+                  onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
+                  required
+                  placeholder="Room Number"
+                />
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Notes"
+                />
+              </div>
+
+              {/* Food & Pills section */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Food & Pills</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <FoodTimingOption 
+                    value="before" 
+                    isSelected={formData.foodTiming === "before"} 
+                    label="Before"
+                    onClick={() => setFormData({ ...formData, foodTiming: "before" })}
+                  />
+                  <FoodTimingOption 
+                    value="after" 
+                    isSelected={formData.foodTiming === "after"} 
+                    label="After"
+                    onClick={() => setFormData({ ...formData, foodTiming: "after" })}
+                  />
+                  <FoodTimingOption 
+                    value="with" 
+                    isSelected={formData.foodTiming === "with"} 
+                    label="With"
+                    onClick={() => setFormData({ ...formData, foodTiming: "with" })}
+                  />
+                </div>
+              </div>
+
+              {/* Notification section */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Notification</Label>
+                <div className="flex justify-between">
+                  <div className="bg-gray-100 rounded-xl p-3 flex items-center flex-grow">
+                    <Bell className="h-5 w-5 mr-3 text-gray-500" />
+                    <Input
+                      type="time"
+                      value={formData.time}
+                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 h-auto text-base appearance-none"
+                      style={{ colorScheme: "light" }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="ml-3 bg-gray-100 rounded-xl h-12 w-12 flex items-center justify-center text-green-500"
                   >
-                    <Sparkles className="w-5 h-5" />
-                    Add Medication Schedule
+                    <Plus className="h-6 w-6" />
                   </Button>
-                </motion.div>
-              </motion.form>
-            )}
-          </AnimatePresence>
-        </div>
+                </div>
+              </div>
+
+              {/* Submit button */}
+              <Button 
+                type="submit" 
+                className="w-full py-6 rounded-xl bg-green-500 hover:bg-green-600 text-white text-lg font-medium mt-8"
+              >
+                Done
+              </Button>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </Card>
     </div>
   );
