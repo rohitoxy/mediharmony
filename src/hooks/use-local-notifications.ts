@@ -7,7 +7,7 @@ import {
   scheduleLocalNotification,
   cancelScheduledNotification
 } from '@/utils/local-notification-utils';
-import { Medication } from '@/types/medication';
+import { Medication, ExtendedNotificationOptions } from '@/types/medication';
 
 interface ScheduledNotification {
   id: string;
@@ -56,7 +56,7 @@ export const useLocalNotifications = (isSoundEnabled: boolean) => {
   ) => {
     if (permissionGranted) {
       // Mobile devices should use vibration for high priority
-      const options = isMobile && priority === 'high' 
+      const options: Partial<ExtendedNotificationOptions> = isMobile && priority === 'high' 
         ? { vibrate: [200, 100, 200, 100, 200, 100, 200] } 
         : {};
       
@@ -77,7 +77,7 @@ export const useLocalNotifications = (isSoundEnabled: boolean) => {
     if (!permissionGranted) return null;
     
     // Create options optimal for mobile if applicable
-    const options = isMobile 
+    const options: Partial<ExtendedNotificationOptions> = isMobile 
       ? { vibrate: priority === 'high' ? [200, 100, 200, 100, 200] : [100, 50, 100] }
       : {};
     

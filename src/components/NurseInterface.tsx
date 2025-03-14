@@ -7,7 +7,6 @@ import { useMedicationAlarm } from "@/hooks/use-medication-alarm";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, X, AlertTriangle, CheckCircle, Info, Check } from "lucide-react";
-import FullScreenAlert from "./alerts/FullScreenAlert";
 import { NurseHeader } from "./nurse/NurseHeader";
 import { NurseStats } from "./nurse/NurseStats";
 import { MedicationFilter } from "./nurse/MedicationFilter";
@@ -27,8 +26,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     groupedAlerts,
     acknowledgeAlert,
     highPriorityCount,
-    fullScreenAlert,
-    closeFullScreenAlert
   } = useMedicationAlarm(medications);
 
   const getTimeStatus = (medicationTime: string) => {
@@ -240,23 +237,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
           </motion.div>
         )}
       </AnimatePresence>
-
-      {fullScreenAlert && (
-        <FullScreenAlert
-          title={fullScreenAlert.title}
-          message={fullScreenAlert.body}
-          medicationId={fullScreenAlert.id.split('-')[0]} // Get only the medication ID part
-          isOpen={true}
-          onClose={(medId) => {
-            const med = medications.find(m => m.id === medId);
-            if (med) {
-              handleComplete(med);
-              acknowledgeAlert(fullScreenAlert.id);
-              closeFullScreenAlert();
-            }
-          }}
-        />
-      )}
     </div>
   );
 };

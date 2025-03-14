@@ -22,5 +22,11 @@ export interface MedicationAlert {
 }
 
 export interface ExtendedNotificationOptions extends NotificationOptions {
-  renotify?: boolean;
+  data?: {
+    medicationId?: string;
+    priority?: 'high' | 'medium' | 'low';
+    timestamp?: number;
+    [key: string]: any;
+  };
+  vibrate?: number[];
 }
