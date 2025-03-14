@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Bell, Calendar, Pill, Plus, X } from "lucide-react";
+import { ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -25,6 +25,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     patientId: "",
+    patientName: "",
     roomNumber: "",
     medicineName: "",
     dosage: "1",
@@ -37,10 +38,20 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Extract only the fields needed for the Medication type
     const medication: Medication = {
       id: Date.now().toString(),
-      ...formData,
+      patientId: formData.patientId,
+      roomNumber: formData.roomNumber,
+      medicineName: formData.medicineName,
+      dosage: formData.dosage,
+      durationDays: formData.durationDays,
+      foodTiming: formData.foodTiming,
+      time: formData.time,
+      notes: formData.notes,
     };
+    
     onMedicationAdd(medication);
     setFormSubmitted(true);
     
@@ -52,6 +63,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     setTimeout(() => {
       setFormData({
         patientId: "",
+        patientName: "",
         roomNumber: "",
         medicineName: "",
         dosage: "1",
@@ -145,6 +157,47 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 <h1 className="text-2xl font-bold ml-2">Add Plan</h1>
               </div>
 
+              {/* Patient details section */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Patient details</Label>
+                <div className="flex gap-3">
+                  <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
+                    <User className="h-5 w-5 mr-3 text-gray-500" />
+                    <Input
+                      value={formData.patientId}
+                      onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
+                      placeholder="Patient ID"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
+                    <User className="h-5 w-5 mr-3 text-gray-500" />
+                    <Input
+                      value={formData.patientName}
+                      onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
+                      placeholder="Patient Name"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
+                    <MapPin className="h-5 w-5 mr-3 text-gray-500" />
+                    <Input
+                      value={formData.roomNumber}
+                      onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
+                      required
+                      className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
+                      placeholder="Room Number"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Pills name section */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Pills name</Label>
@@ -164,9 +217,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                       size="icon" 
                       className="rounded-full absolute right-2 text-green-500"
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M7 17L17 7M7 7L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <X className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
@@ -205,25 +256,19 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Hidden fields that are not in the design but needed for functionality */}
-              <div className="hidden">
-                <Input
-                  value={formData.patientId}
-                  onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-                  required
-                  placeholder="Patient ID"
-                />
-                <Input
-                  value={formData.roomNumber}
-                  onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
-                  required
-                  placeholder="Room Number"
-                />
-                <Textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Notes"
-                />
+              {/* Notes field (visible but optional) */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Notes (optional)</Label>
+                <div className="flex items-center">
+                  <div className="w-full relative bg-gray-100 rounded-xl p-3">
+                    <Textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      className="border-none bg-transparent focus:ring-0 p-0 w-full min-h-[60px] text-base resize-none"
+                      placeholder="Additional notes"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Food & Pills section */}
