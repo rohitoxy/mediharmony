@@ -16,34 +16,34 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     stopSounds
   } = useAlarmSounds(isSoundEnabled);
   
+  const medicationCheck = useMedicationCheck(medications);
+  const { activeAlerts, acknowledgeAlert, clearAlert, currentTime } = medicationCheck;
+
   const { notificationsEnabled } = useFirebaseNotifications(
     isSoundEnabled,
     (alerts) => {
-      if (medicationCheck && Array.isArray(alerts)) {
-        // Only update if we have a valid medicationCheck and alerts is an array
-        medicationCheck.activeAlerts.push(...alerts);
-      }
-    },
-    playAlarmSequence
+      // No-op for this implementation
+    }
   );
-  
-  const medicationCheck = useMedicationCheck(medications);
-  const { activeAlerts, acknowledgeAlert, clearAlert, currentTime } = medicationCheck;
 
   useEffect(() => {
     return initializeAudio();
   }, [initializeAudio]);
 
   const closeFullScreenAlert = useCallback(() => {
-    setFullScreenAlert(null);
-    stopSounds();
-  }, [stopSounds]);
+    if (fullScreenAlert) {
+      console.log('Closing full screen alert:', fullScreenAlert.id);
+      setFullScreenAlert(null);
+      stopSounds();
+    }
+  }, [fullScreenAlert, stopSounds]);
 
   // When a high priority alert is active, play the alarm and show fullscreen alert
   useEffect(() => {
     const highPriorityAlert = activeAlerts.find(a => a.priority === 'high' && !a.acknowledged);
     
     if (highPriorityAlert && !fullScreenAlert) {
+      console.log('Showing high priority alert:', highPriorityAlert);
       setFullScreenAlert(highPriorityAlert);
       if (isSoundEnabled) {
         playAlarmSequence();
@@ -54,12 +54,22 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   }, [activeAlerts, fullScreenAlert, isSoundEnabled, playAlarmSequence, closeFullScreenAlert]);
 
   const handleAcknowledgeAlert = useCallback((alertId: string) => {
+    console.log('Using handleAcknowledgeAlert for:', alertId);
+    
+    // Find the medication ID from the alert ID
+    const [medicationId] = alertId.split('-');
+    const medication = medications.find(med => med.id === medicationId);
+    
+    // Acknowledge the alert
     acknowledgeAlert(alertId);
     
+    // Close fullscreen alert if it's the same one
     if (fullScreenAlert?.id === alertId) {
       closeFullScreenAlert();
     }
-  }, [fullScreenAlert, closeFullScreenAlert, acknowledgeAlert]);
+
+    return medicationId;
+  }, [fullScreenAlert, closeFullScreenAlert, acknowledgeAlert, medications]);
 
   const toggleSound = useCallback(() => {
     setIsSoundEnabled(prev => {
@@ -70,6 +80,7 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     });
   }, [stopSounds]);
 
+  // Group alerts by priority for easier rendering
   const groupedAlerts = activeAlerts.reduce((acc, alert) => {
     if (!acc[alert.priority]) {
       acc[alert.priority] = [];

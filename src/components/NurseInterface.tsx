@@ -1,3 +1,4 @@
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Medication } from "@/types/medication";
@@ -157,8 +158,9 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                               variant="outline"
                               className="text-xs"
                               onClick={() => {
-                                acknowledgeAlert(alert.id);
-                                const med = medications.find(m => m.id === alert.id);
+                                const medicationId = acknowledgeAlert(alert.id);
+                                // Find the medication by ID
+                                const med = medications.find(m => m.id === medicationId);
                                 if (med) handleComplete(med);
                               }}
                             >
@@ -243,12 +245,15 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         <FullScreenAlert
           title={fullScreenAlert.title}
           message={fullScreenAlert.body}
-          medicationId={fullScreenAlert.id}
+          medicationId={fullScreenAlert.id.split('-')[0]} // Get only the medication ID part
           isOpen={true}
           onClose={(medId) => {
-            closeFullScreenAlert();
             const med = medications.find(m => m.id === medId);
-            if (med) handleComplete(med);
+            if (med) {
+              handleComplete(med);
+              acknowledgeAlert(fullScreenAlert.id);
+              closeFullScreenAlert();
+            }
           }}
         />
       )}

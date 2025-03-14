@@ -8,6 +8,18 @@ export const useMedicationCheck = (medications: Medication[]) => {
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Clear stale alerts on medication change
+  useEffect(() => {
+    // Remove alerts for medications that no longer exist or are completed
+    setActiveAlerts(prev => 
+      prev.filter(alert => {
+        const [medicationId] = alert.id.split('-');
+        const medication = medications.find(m => m.id === medicationId);
+        return medication && !medication.completed;
+      })
+    );
+  }, [medications]);
+
   useEffect(() => {
     const checkMedications = () => {
       const now = new Date();
@@ -23,12 +35,14 @@ export const useMedicationCheck = (medications: Medication[]) => {
         
         // Check if it's time for medication (within a 5-minute window)
         if (Math.abs(timeInMinutes - medicationTime) <= 5) {
-          const alertId = `${medication.id}-${now.toISOString()}`;
+          // Use just the medication ID as the base for the alert ID
+          const medicationId = medication.id;
           
           // Check if this alert is already active
-          const alertExists = activeAlerts.some(alert => alert.id.startsWith(medication.id));
+          const alertExists = activeAlerts.some(alert => alert.id.startsWith(medicationId));
           
           if (!alertExists) {
+            const alertId = `${medicationId}-${now.toISOString()}`;
             const newAlert: MedicationAlert = {
               id: alertId,
               title: 'Medication Due',
@@ -38,6 +52,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
               acknowledged: false
             };
             
+            console.log('Creating new medication alert:', newAlert);
             setActiveAlerts(prev => [...prev, newAlert]);
             
             toast({
@@ -59,6 +74,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
   }, [medications, activeAlerts, toast]);
   
   const acknowledgeAlert = useCallback((alertId: string) => {
+    console.log('Acknowledging alert:', alertId);
     setActiveAlerts(prev => 
       prev.map(alert => 
         alert.id === alertId 
@@ -69,6 +85,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
   }, []);
   
   const clearAlert = useCallback((alertId: string) => {
+    console.log('Clearing alert:', alertId);
     setActiveAlerts(prev => prev.filter(alert => alert.id !== alertId));
   }, []);
   
