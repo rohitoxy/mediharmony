@@ -19,11 +19,13 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   const medicationCheck = useMedicationCheck(medications);
   const { activeAlerts, acknowledgeAlert, clearAlert, currentTime } = medicationCheck;
 
+  // Fix: Provide the missing third argument (playAlarmSequence)
   const { notificationsEnabled } = useFirebaseNotifications(
     isSoundEnabled,
     (alerts) => {
       // No-op for this implementation
-    }
+    },
+    playAlarmSequence
   );
 
   useEffect(() => {
