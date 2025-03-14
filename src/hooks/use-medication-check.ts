@@ -1,18 +1,19 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Medication, MedicationAlert } from '@/types/medication';
 import { useToast } from '@/hooks/use-toast';
-import { useMedicationAlarm } from '@/hooks/use-medication-alarm';
 
 export const useMedicationCheck = (medications: Medication[]) => {
   const [activeAlerts, setActiveAlerts] = useState<MedicationAlert[]>([]);
   const { toast } = useToast();
-  const { playAlarm, stopAlarm } = useMedicationAlarm();
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const checkMedications = () => {
       const now = new Date();
-      const currentTime = now.getHours() * 60 + now.getMinutes();
+      setCurrentTime(now);
+      
+      const timeInMinutes = now.getHours() * 60 + now.getMinutes();
       
       medications.forEach(medication => {
         if (medication.completed) return;
@@ -21,7 +22,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
         const medicationTime = hours * 60 + minutes;
         
         // Check if it's time for medication (within a 5-minute window)
-        if (Math.abs(currentTime - medicationTime) <= 5) {
+        if (Math.abs(timeInMinutes - medicationTime) <= 5) {
           const alertId = `${medication.id}-${now.toISOString()}`;
           
           // Check if this alert is already active
@@ -39,8 +40,6 @@ export const useMedicationCheck = (medications: Medication[]) => {
             
             setActiveAlerts(prev => [...prev, newAlert]);
             
-            playAlarm();
-            
             toast({
               title: 'Medication Due',
               description: `Time to administer ${medication.medicineName} for patient in room ${medication.roomNumber}`,
@@ -56,11 +55,10 @@ export const useMedicationCheck = (medications: Medication[]) => {
     
     return () => {
       clearInterval(interval);
-      stopAlarm();
     };
-  }, [medications, activeAlerts, toast, playAlarm, stopAlarm]);
+  }, [medications, activeAlerts, toast]);
   
-  const acknowledgeAlert = (alertId: string) => {
+  const acknowledgeAlert = useCallback((alertId: string) => {
     setActiveAlerts(prev => 
       prev.map(alert => 
         alert.id === alertId 
@@ -68,21 +66,16 @@ export const useMedicationCheck = (medications: Medication[]) => {
           : alert
       )
     );
-    stopAlarm();
-  };
+  }, []);
   
-  const clearAlert = (alertId: string) => {
+  const clearAlert = useCallback((alertId: string) => {
     setActiveAlerts(prev => prev.filter(alert => alert.id !== alertId));
-    
-    // If no active alerts are left, stop the alarm
-    if (activeAlerts.length <= 1) {
-      stopAlarm();
-    }
-  };
+  }, []);
   
   return {
     activeAlerts,
     acknowledgeAlert,
-    clearAlert
+    clearAlert,
+    currentTime
   };
 };
