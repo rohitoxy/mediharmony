@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
@@ -7,7 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X } from "lucide-react";
+import { 
+  ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X, 
+  Check, Search, Loader2 
+} from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useMedicineSuggestions } from "@/hooks/use-medicine-suggestions";
 
 interface Medication {
   id: string;
@@ -35,6 +40,25 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     notes: "",
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Get medicine suggestions based on current input
+  const { suggestions, loading } = useMedicineSuggestions(formData.medicineName);
+  
+  // Close the popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setIsPopoverOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +98,21 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       });
       setFormSubmitted(false);
     }, 1000);
+  };
+
+  const handleMedicineInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, medicineName: value });
+    if (value.length >= 2) {
+      setIsPopoverOpen(true);
+    } else {
+      setIsPopoverOpen(false);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    setFormData({ ...formData, medicineName: suggestion });
+    setIsPopoverOpen(false);
   };
 
   const FoodTimingOption = ({ value, isSelected, label, onClick }: { 
@@ -198,28 +237,62 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Pills name section */}
+              {/* Pills name section with autocomplete */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Pills name</Label>
-                <div className="flex items-center">
+                <div className="relative">
                   <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
                     <Pill className="h-5 w-5 mr-3 text-gray-500" />
                     <Input
+                      ref={inputRef}
                       value={formData.medicineName}
-                      onChange={(e) => setFormData({ ...formData, medicineName: e.target.value })}
+                      onChange={handleMedicineInputChange}
+                      onFocus={() => formData.medicineName.length >= 2 && setIsPopoverOpen(true)}
                       required
                       className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
                       placeholder="Medicine name"
                     />
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      className="rounded-full absolute right-2 text-green-500"
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
+                    {formData.medicineName && (
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon" 
+                        className="rounded-full absolute right-2 text-gray-500 hover:text-red-500"
+                        onClick={() => {
+                          setFormData({ ...formData, medicineName: "" });
+                          setIsPopoverOpen(false);
+                        }}
+                      >
+                        <X className="h-5 w-5" />
+                      </Button>
+                    )}
                   </div>
+                  
+                  {/* Suggestions dropdown */}
+                  {isPopoverOpen && suggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 max-h-60 overflow-auto">
+                      {loading ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+                          <span className="ml-2 text-gray-500">Loading suggestions...</span>
+                        </div>
+                      ) : (
+                        suggestions.map((suggestion, index) => (
+                          <div
+                            key={index}
+                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center"
+                            onClick={() => handleSuggestionSelect(suggestion)}
+                          >
+                            <Pill className="h-4 w-4 mr-2 text-gray-400" />
+                            <span className="text-gray-700">{suggestion}</span>
+                            {suggestion === formData.medicineName && (
+                              <Check className="h-4 w-4 ml-auto text-green-500" />
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -256,7 +329,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Notes field (visible but optional) */}
+              {/* Notes field */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Notes (optional)</Label>
                 <div className="flex items-center">
