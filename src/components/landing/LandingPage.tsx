@@ -9,7 +9,7 @@ interface LandingPageProps {
 
 const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F0F8FF] flex flex-col items-center justify-center p-6 relative">
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&auto=format&fit=crop&q=60')] opacity-5 bg-cover bg-center" />
       
       {/* Floating Icons Background */}
@@ -17,7 +17,7 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
         {[Clock, Pill, AlertCircle, Check].map((Icon, index) => (
           <motion.div
             key={index}
-            className="absolute text-primary/10"
+            className="absolute text-slate-300"
             initial={{ 
               x: Math.random() * 100, 
               y: Math.random() * 100,
@@ -57,12 +57,12 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Pill className="w-12 h-12 text-primary" />
+            <Pill className="w-12 h-12 text-[#A5D8FF]" />
           </motion.div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mt-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 text-slate-700 mt-4">
             Med Alert
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base max-w-xs mx-auto mt-2">
+          <p className="text-xl text-slate-600 max-w-xs mx-auto mt-2">
             Efficient medication management system for healthcare professionals
           </p>
         </motion.div>
@@ -71,23 +71,24 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg"
+          className="bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-lg"
         >
-          <h2 className="text-lg font-medium text-gray-800 mb-4">Choose your interface</h2>
+          <h2 className="text-2xl font-semibold text-slate-700 mb-6">Choose your interface</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="w-full"
             >
               <Button
-                className="w-full sm:w-48 h-14 text-base shadow-lg bg-primary hover:bg-primary/90 gap-2 group"
+                className="w-full sm:w-48 h-14 text-base shadow-lg bg-[#A5D8FF] hover:bg-[#8ECAFF] text-slate-700 font-medium gap-2 group"
                 onClick={() => onInterfaceSelect("doctor")}
               >
                 <motion.div
                   whileHover={{ rotate: 15 }}
                   className="bg-white/20 p-1.5 rounded-full"
                 >
-                  <Stethoscope className="w-4 h-4" />
+                  <Stethoscope className="w-5 h-5" />
                 </motion.div>
                 <span className="group-hover:translate-x-1 transition-transform">
                   Doctor Interface
@@ -97,16 +98,17 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="w-full"
             >
               <Button
-                className="w-full sm:w-48 h-14 text-base shadow-lg bg-accent hover:bg-accent/90 gap-2 group"
+                className="w-full sm:w-48 h-14 text-base shadow-lg bg-[#A5D8FF] hover:bg-[#8ECAFF] text-slate-700 font-medium gap-2 group"
                 onClick={() => onInterfaceSelect("nurse")}
               >
                 <motion.div
                   whileHover={{ rotate: 15 }}
                   className="bg-white/20 p-1.5 rounded-full"
                 >
-                  <User className="w-4 h-4" />
+                  <User className="w-5 h-5" />
                 </motion.div>
                 <span className="group-hover:translate-x-1 transition-transform">
                   Nurse Interface
@@ -121,7 +123,7 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.8 }}
         transition={{ delay: 1, duration: 0.8 }}
-        className="text-center text-xs text-muted-foreground mt-auto py-4"
+        className="text-center text-xs text-slate-500 mt-auto py-4"
       >
         © {new Date().getFullYear()} Med Alert System • All Rights Reserved
       </motion.div>
