@@ -1,3 +1,4 @@
+
 // Types related to medications and alerts
 export interface Medication {
   id: string;
@@ -29,4 +30,5 @@ export interface ExtendedNotificationOptions extends NotificationOptions {
     [key: string]: any;
   };
   vibrate?: number[];
+  renotify?: boolean;
 }
