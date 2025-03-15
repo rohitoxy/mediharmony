@@ -1,16 +1,16 @@
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LogIn, UserPlus, Mail, Lock } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 
 const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isSignUp?: boolean }) => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -20,9 +20,25 @@ const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isS
     
     try {
       if (isSignUp) {
+        // Check if passwords match
+        if (password !== confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              name,
+            }
+          }
         });
 
         if (error) {
@@ -71,58 +87,71 @@ const LoginForm = ({ onSuccess, isSignUp = false }: { onSuccess: () => void; isS
   };
 
   return (
-    <Card className="p-6 w-full shadow-lg bg-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full" />
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="flex items-center gap-2">
-            <Mail className="w-4 h-4" />
-            Email
-          </Label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {isSignUp && (
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={20} />
           <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="doctor@hospital.com"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required={isSignUp}
+            placeholder="Your Name"
+            className="pl-10 py-6 bg-transparent border-b border-slate-300 rounded-none focus:ring-0 focus:border-slate-500"
           />
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="password" className="flex items-center gap-2">
-            <Lock className="w-4 h-4" />
-            Password
-          </Label>
+      )}
+      
+      <div className="relative">
+        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={20} />
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder={isSignUp ? "Your Email" : "Enter your Email"}
+          className="pl-10 py-6 bg-transparent border-b border-slate-300 rounded-none focus:ring-0 focus:border-slate-500"
+        />
+      </div>
+      
+      <div className="relative">
+        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={20} />
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          placeholder={isSignUp ? "Your Password" : "Enter your Password"}
+          className="pl-10 py-6 bg-transparent border-b border-slate-300 rounded-none focus:ring-0 focus:border-slate-500"
+        />
+      </div>
+      
+      {isSignUp && (
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={20} />
           <Input
-            id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required={isSignUp}
+            placeholder="Confirm Password"
+            className="pl-10 py-6 bg-transparent border-b border-slate-300 rounded-none focus:ring-0 focus:border-slate-500"
           />
         </div>
+      )}
 
-        <Button 
-          type="submit" 
-          className="w-full bg-primary hover:bg-primary/90 gap-2" 
-          disabled={loading}
-        >
-          {isSignUp ? (
-            <>
-              <UserPlus className="w-4 h-4" />
-              {loading ? "Creating Account..." : "Create Account"}
-            </>
-          ) : (
-            <>
-              <LogIn className="w-4 h-4" />
-              {loading ? "Logging in..." : "Login"}
-            </>
-          )}
-        </Button>
-      </form>
-    </Card>
+      <Button 
+        type="submit" 
+        className="w-full py-6 mt-8 bg-[#A5D8FF] hover:bg-[#8ECAFF] text-slate-700 font-medium text-lg"
+        disabled={loading}
+      >
+        {isSignUp ? (
+          loading ? "Creating Account..." : "Sign up"
+        ) : (
+          loading ? "Logging in..." : "Continue"
+        )}
+      </Button>
+    </form>
   );
 };
 
