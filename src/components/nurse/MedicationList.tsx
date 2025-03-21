@@ -19,11 +19,11 @@ export const MedicationList = ({
 }: MedicationListProps) => {
   if (medications.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+      <div className="text-center py-12 bg-card rounded-lg shadow-sm border border-border/30">
         <div className="bg-muted inline-flex p-4 rounded-full mb-4">
           <Calendar className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-medium text-gray-800 mb-2">No medications found</h3>
+        <h3 className="text-lg font-medium text-foreground mb-2">No medications found</h3>
         <p className="text-muted-foreground max-w-md mx-auto">
           There are no medications scheduled. Check back later.
         </p>

@@ -23,7 +23,7 @@ export const NurseHeader = ({
   };
 
   return (
-    <div className="mb-6 bg-gradient-to-r from-primary/10 to-accent/5 p-4 rounded-lg shadow-sm">
+    <div className="mb-6 bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg shadow-sm border border-border/30">
       <div className="flex flex-col md:flex-row md:items-center justify-between">
         <div className="flex items-center mb-4 md:mb-0">
           <Calendar className="text-primary h-6 w-6 mr-2" />
@@ -43,7 +43,7 @@ export const NurseHeader = ({
         </div>
         
         <div className="flex items-center space-x-2">
-          <div className="bg-white px-3 py-1.5 rounded-md shadow-sm text-primary font-medium">
+          <div className="bg-card px-3 py-1.5 rounded-md shadow-sm text-primary font-medium border border-border/30">
             <Clock className="inline-block h-4 w-4 mr-1.5 text-primary" />
             {formatTime(currentTime)}
           </div>
@@ -53,7 +53,7 @@ export const NurseHeader = ({
               variant="outline"
               size="sm"
               onClick={() => setShowAlertsPanel(true)}
-              className="relative bg-white border-red-200 hover:bg-red-50 hover:text-red-600"
+              className="relative bg-card border-red-200 hover:bg-red-50 hover:text-red-600"
             >
               <Bell className="h-4 w-4 text-red-500" />
               <Badge 
@@ -70,7 +70,7 @@ export const NurseHeader = ({
             size="sm"
             onClick={toggleSound}
             title={isSoundEnabled ? "Disable sound" : "Enable sound"}
-            className="bg-white"
+            className="bg-card"
           >
             {isSoundEnabled ? (
               <Volume2 className="h-4 w-4 text-primary" />

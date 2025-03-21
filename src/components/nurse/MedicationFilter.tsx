@@ -12,7 +12,7 @@ export const MedicationFilter = ({ filterStatus, setFilterStatus }: MedicationFi
     <div className="mb-4 flex items-center space-x-2">
       <Filter className="h-4 w-4 text-muted-foreground" />
       <span className="text-sm text-muted-foreground">Filter:</span>
-      <div className="flex bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="flex bg-card rounded-lg shadow-sm overflow-hidden border border-border/40">
         <Button 
           variant={filterStatus === 'all' ? "default" : "ghost"} 
           size="sm" 

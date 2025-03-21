@@ -72,8 +72,8 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
       whileHover={{ scale: 1.02 }}
     >
       <Card 
-        className={`relative shadow-md transition-all duration-300 bg-white overflow-hidden
-          ${medication.completed ? 'bg-gray-50' : ''}
+        className={`relative shadow-md transition-all duration-300 bg-card overflow-hidden border border-border/30
+          ${medication.completed ? 'bg-gray-50/50' : ''}
           ${isAlertActive ? 'shadow-lg ring-2 ring-red-500' : ''}
           ${isExpanded ? 'p-6' : 'p-4'}
         `}
@@ -123,7 +123,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
                   ? "bg-red-500 text-white animate-pulse"
                   : timeStatus === "past"
                   ? "bg-muted"
-                  : "bg-primary text-white"
+                  : "bg-primary text-primary-foreground"
               } flex items-center`}
             >
               <Clock className="w-3 h-3 mr-1" />
@@ -149,24 +149,24 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
           </div>
 
           {!isExpanded ? (
-            <div className="flex items-center justify-between text-gray-600 text-sm mt-2">
+            <div className="flex items-center justify-between text-muted-foreground text-sm mt-2">
               <div className="flex items-center">
                 <DoorClosed className="w-3 h-3 mr-1" />
                 <span>Room {medication.roomNumber}</span>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </div>
           ) : (
             <div className="space-y-4 mt-3">
               {/* Patient & Room Info */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center text-gray-600 bg-gray-50 p-2 rounded-md">
+                <div className="flex items-center text-foreground bg-background/50 p-2 rounded-md">
                   <div className="bg-primary/10 p-1 rounded-full mr-2">
                     <User className="w-3 h-3 text-primary" />
                   </div>
                   <span className="text-sm">ID: {medication.patientId}</span>
                 </div>
-                <div className="flex items-center text-gray-600 bg-gray-50 p-2 rounded-md">
+                <div className="flex items-center text-foreground bg-background/50 p-2 rounded-md">
                   <div className="bg-primary/10 p-1 rounded-full mr-2">
                     <DoorClosed className="w-3 h-3 text-primary" />
                   </div>
@@ -175,7 +175,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
               </div>
 
               {/* Medication Details */}
-              <div className="space-y-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+              <div className="space-y-2 text-sm text-foreground bg-background/50 p-3 rounded-md">
                 <div className="flex items-center">
                   <Pill className="w-3 h-3 mr-2 text-primary" />
                   <p>Dosage: <span className="font-medium">{medication.dosage}</span></p>
@@ -201,7 +201,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
               )}
               
               <div className="flex justify-center">
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
               </div>
             </div>
           )}

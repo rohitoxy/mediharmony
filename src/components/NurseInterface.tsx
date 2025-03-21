@@ -115,7 +115,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-auto"
+              className="bg-card rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-auto border border-border/40"
             >
               <div className="flex justify-between items-center p-4 border-b">
                 <h3 className="text-lg font-semibold flex items-center">
