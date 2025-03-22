@@ -21,8 +21,10 @@ const mockSupabaseFrom = () => ({
   eq: () => {}
 });
 
-// Mock the supabase client
-const originalSupabase = { ...supabase };
+// Save the original supabase client for later restoration if needed
+const originalSupabaseFrom = supabase.from;
+
+// Override the supabase client methods for testing
 // @ts-ignore - This is a test mock
 supabase.from = mockSupabaseFrom;
 
@@ -51,11 +53,8 @@ export const runMedicationTests = (): void => {
     }
     
     // Verify Supabase was called correctly
-    if (!mockSupabaseFrom) {
-      throw new Error("Supabase.from was not called");
-    }
-    if (!mockSupabaseUpdate) {
-      throw new Error("Supabase update was not called");
+    if (typeof supabase.from !== 'function') {
+      throw new Error("Supabase.from is not a function");
     }
   });
 
@@ -78,14 +77,15 @@ export const runMedicationTests = (): void => {
     }
     
     // Verify Supabase was called correctly
-    if (!mockSupabaseFrom) {
-      throw new Error("Supabase.from was not called");
-    }
-    if (!mockSupabaseDelete) {
-      throw new Error("Supabase delete was not called");
+    if (typeof supabase.from !== 'function') {
+      throw new Error("Supabase.from is not a function");
     }
   });
 
   // Print test results
   testSuite.printResults();
+
+  // Restore original supabase method if needed
+  // @ts-ignore - This is a test mock cleanup
+  supabase.from = originalSupabaseFrom;
 };

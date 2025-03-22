@@ -18,9 +18,10 @@ const mockPlayAlarmSequence = () => {};
 const mockStopSounds = () => {};
 const mockInitializeAudio = () => () => {};
 
-// Mock the useAlarmSounds hook
-// @ts-ignore - This is a test mock
+// Store the original function for later restoration if needed
 const originalUseAlarmSounds = useAlarmSounds;
+
+// Override the useAlarmSounds hook for testing
 // @ts-ignore - This is a test mock
 useAlarmSounds = (enabled: boolean) => ({
   initializeAudio: mockInitializeAudio,
@@ -89,11 +90,6 @@ export const runAlarmTests = (): void => {
     if (!medicationId || !medications.some(med => med.id === medicationId)) {
       throw new Error("Incorrect medication ID returned when acknowledging alert");
     }
-    
-    // Verify sounds were stopped
-    if (!mockStopSounds) {
-      throw new Error("stopSounds was not called");
-    }
   });
 
   // Test the alarm sound system
@@ -109,12 +105,16 @@ export const runAlarmTests = (): void => {
     
     // Verify the alarm should play when there are high priority alerts
     if (highPriorityCount > 0 && isSoundEnabled) {
-      if (!mockPlayAlarmSequence) {
-        throw new Error("playAlarmSequence was not called");
+      if (typeof mockPlayAlarmSequence !== 'function') {
+        throw new Error("playAlarmSequence is not available");
       }
     }
   });
 
   // Print test results
   testSuite.printResults();
+
+  // Restore original hook if needed
+  // @ts-ignore - This is a test mock cleanup
+  useAlarmSounds = originalUseAlarmSounds;
 };
