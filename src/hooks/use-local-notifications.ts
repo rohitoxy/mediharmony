@@ -154,17 +154,17 @@ export const useLocalNotifications = (isSoundEnabled: boolean) => {
         scheduledTime
       );
       
-      // Also schedule a reminder 15 minutes before
-      const reminderTime = new Date(scheduledTime);
-      reminderTime.setMinutes(reminderTime.getMinutes() - 15);
+      // Schedule a 1-minute warning
+      const warningTime = new Date(scheduledTime);
+      warningTime.setMinutes(warningTime.getMinutes() - 1);
       
-      if (reminderTime > now) {
+      if (warningTime > now) {
         scheduleNotification(
-          'Upcoming Medication',
-          `${medication.medicineName} for patient in room ${medication.roomNumber} in 15 minutes`,
+          'Medication Due Soon',
+          `${medication.medicineName} for patient in room ${medication.roomNumber} in 1 minute`,
           medication.id,
           'medium',
-          reminderTime
+          warningTime
         );
       }
     });

@@ -25,16 +25,16 @@ export const useMedicationCheck = (medications: Medication[]) => {
       const now = new Date();
       setCurrentTime(now);
       
-      const timeInMinutes = now.getHours() * 60 + now.getMinutes();
+      const currentHours = now.getHours();
+      const currentMinutes = now.getMinutes();
       
       medications.forEach(medication => {
         if (medication.completed) return;
         
         const [hours, minutes] = medication.time.split(':').map(Number);
-        const medicationTime = hours * 60 + minutes;
         
-        // Check if it's time for medication (within a 5-minute window)
-        if (Math.abs(timeInMinutes - medicationTime) <= 5) {
+        // Check if it's the exact time for medication
+        if (currentHours === hours && currentMinutes === minutes) {
           // Use just the medication ID as the base for the alert ID
           const medicationId = medication.id;
           
@@ -62,10 +62,45 @@ export const useMedicationCheck = (medications: Medication[]) => {
             });
           }
         }
+        
+        // Also check for 1-minute warning (exact time minus 1 minute)
+        const warningMinuteTime = new Date();
+        warningMinuteTime.setHours(hours, minutes, 0, 0);
+        warningMinuteTime.setMinutes(warningMinuteTime.getMinutes() - 1);
+        
+        if (currentHours === warningMinuteTime.getHours() && 
+            currentMinutes === warningMinuteTime.getMinutes()) {
+          // Create a warning alert with medium priority
+          const medicationId = medication.id;
+          const warningAlertExists = activeAlerts.some(alert => 
+            alert.id.startsWith(`${medicationId}-warning`)
+          );
+          
+          if (!warningAlertExists) {
+            const alertId = `${medicationId}-warning-${now.toISOString()}`;
+            const newAlert: MedicationAlert = {
+              id: alertId,
+              title: 'Medication Due Soon',
+              body: `${medication.medicineName} for patient in room ${medication.roomNumber} due in 1 minute`,
+              timestamp: Date.now(),
+              priority: 'medium',
+              acknowledged: false
+            };
+            
+            console.log('Creating medication warning alert:', newAlert);
+            setActiveAlerts(prev => [...prev, newAlert]);
+            
+            toast({
+              title: 'Medication Due Soon',
+              description: `${medication.medicineName} for patient in room ${medication.roomNumber} due in 1 minute`,
+              variant: 'default',
+            });
+          }
+        }
       });
     };
     
-    const interval = setInterval(checkMedications, 60000); // Check every minute
+    const interval = setInterval(checkMedications, 10000); // Check every 10 seconds for better efficiency
     checkMedications(); // Check immediately on first load
     
     return () => {

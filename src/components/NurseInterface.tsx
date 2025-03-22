@@ -11,6 +11,7 @@ import { NurseHeader } from "./nurse/NurseHeader";
 import { NurseStats } from "./nurse/NurseStats";
 import { MedicationFilter } from "./nurse/MedicationFilter";
 import { MedicationList } from "./nurse/MedicationList";
+import MedicationFullScreenAlert from "./medication/MedicationFullScreenAlert";
 
 const NurseInterface = ({ medications: initialMedications }: { medications: Medication[] }) => {
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
@@ -27,6 +28,9 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     acknowledgeAlert,
     highPriorityCount,
   } = useMedicationAlarm(medications);
+
+  // Find if there's an unacknowledged high priority alert
+  const activeHighPriorityAlert = groupedAlerts.high?.find(alert => !alert.acknowledged);
 
   const getTimeStatus = (medicationTime: string) => {
     const [hours, minutes] = medicationTime.split(":");
@@ -49,6 +53,17 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     if (filterStatus === 'completed') return med.completed;
     return true;
   });
+
+  const handleAlertAcknowledge = (alertId: string) => {
+    const medicationId = acknowledgeAlert(alertId);
+    if (medicationId) {
+      const medication = medications.find(m => m.id === medicationId);
+      if (medication) {
+        handleComplete(medication);
+      }
+    }
+    return medicationId;
+  };
 
   return (
     <div className="p-3 md:p-6 animate-fade-in">
@@ -103,6 +118,16 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Full Screen Alert for High Priority Medications */}
+      <AnimatePresence>
+        {activeHighPriorityAlert && (
+          <MedicationFullScreenAlert
+            alert={activeHighPriorityAlert}
+            onAcknowledge={handleAlertAcknowledge}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showAlertsPanel && (
           <motion.div 
@@ -154,12 +179,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                               size="sm" 
                               variant="outline"
                               className="text-xs"
-                              onClick={() => {
-                                const medicationId = acknowledgeAlert(alert.id);
-                                // Find the medication by ID
-                                const med = medications.find(m => m.id === medicationId);
-                                if (med) handleComplete(med);
-                              }}
+                              onClick={() => handleAlertAcknowledge(alert.id)}
                             >
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Mark as Given
@@ -175,7 +195,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                   <div className="space-y-2">
                     <h4 className="font-medium text-orange-600 flex items-center">
                       <AlertTriangle className="h-4 w-4 mr-2" />
-                      Coming Up Soon
+                      Due in 1 Minute
                     </h4>
                     <div className="space-y-2 pl-2 border-l-2 border-orange-400">
                       {groupedAlerts.medium.map(alert => (
@@ -184,28 +204,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
                           initial={{ x: -5, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
                           className="bg-orange-50 p-3 rounded-md border border-orange-200"
-                        >
-                          <p className="font-semibold">{alert.title}</p>
-                          <p className="text-sm text-gray-700">{alert.body}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {groupedAlerts.low && groupedAlerts.low.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-blue-600 flex items-center">
-                      <Info className="h-4 w-4 mr-2" />
-                      For Your Information
-                    </h4>
-                    <div className="space-y-2 pl-2 border-l-2 border-blue-400">
-                      {groupedAlerts.low.map(alert => (
-                        <motion.div 
-                          key={alert.id} 
-                          initial={{ x: -5, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          className="bg-blue-50 p-3 rounded-md border border-blue-200"
                         >
                           <p className="font-semibold">{alert.title}</p>
                           <p className="text-sm text-gray-700">{alert.body}</p>
