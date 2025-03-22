@@ -11,6 +11,9 @@ import {
   generateMedicationList 
 } from "./test-utils";
 
+// Define the filter status type to ensure proper typing
+type FilterStatus = 'all' | 'pending' | 'completed';
+
 export const runFilterTests = (): void => {
   const testSuite = new TestSuite();
 
@@ -22,7 +25,7 @@ export const runFilterTests = (): void => {
     const medications = [completedMed, pendingMed];
     
     // Set filter to 'all'
-    const filterStatus = 'all';
+    const filterStatus: FilterStatus = 'all';
     
     // Apply the filtering logic
     const filteredMedications = medications.filter(med => {
@@ -50,7 +53,7 @@ export const runFilterTests = (): void => {
     const medications = [completedMed, pendingMed];
     
     // Set filter to 'pending'
-    const filterStatus = 'pending';
+    const filterStatus: FilterStatus = 'pending';
     
     // Apply the filtering logic
     const filteredMedications = medications.filter(med => {
@@ -78,7 +81,7 @@ export const runFilterTests = (): void => {
     const medications = [completedMed, pendingMed];
     
     // Set filter to 'completed'
-    const filterStatus = 'completed';
+    const filterStatus: FilterStatus = 'completed';
     
     // Apply the filtering logic
     const filteredMedications = medications.filter(med => {
