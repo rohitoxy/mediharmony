@@ -1,6 +1,6 @@
 
 import { motion } from "framer-motion";
-import { Flask } from "lucide-react";
+import { Beaker } from "lucide-react";
 
 interface TestOptionProps {
   onSelect: () => void;
@@ -18,7 +18,7 @@ const TestOption = ({ onSelect }: TestOptionProps) => {
       
       <div className="relative z-10 p-6 flex flex-col items-center text-center">
         <div className="p-3 rounded-full bg-purple-100 mb-4">
-          <Flask className="h-8 w-8 text-purple-500" />
+          <Beaker className="h-8 w-8 text-purple-500" />
         </div>
         
         <h3 className="text-xl font-bold mb-2 text-purple-800">Test Suite</h3>

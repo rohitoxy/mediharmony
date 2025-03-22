@@ -51,8 +51,8 @@ export const runFilterTests = (): void => {
     // Apply the filtering logic
     const filteredMedications = medications.filter(med => {
       if (filterStatus === 'all') return true;
-      if (filterStatus === 'pending') return !med.completed;
-      if (filterStatus === 'completed') return med.completed;
+      else if (filterStatus === 'pending') return !med.completed;
+      else if (filterStatus === 'completed') return med.completed;
       return true;
     });
     
@@ -75,8 +75,8 @@ export const runFilterTests = (): void => {
     // Apply the filtering logic
     const filteredMedications = medications.filter(med => {
       if (filterStatus === 'all') return true;
-      if (filterStatus === 'pending') return !med.completed;
-      if (filterStatus === 'completed') return med.completed;
+      else if (filterStatus === 'pending') return !med.completed;
+      else if (filterStatus === 'completed') return med.completed;
       return true;
     });
     
