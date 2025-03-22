@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -9,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import LandingPage from "@/components/landing/LandingPage";
 import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
-import TestRunner from "@/components/TestRunner";
 
 export interface Medication {
   id: string;
@@ -32,14 +30,12 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("Initial session:", session);
       setSession(session);
       setLoading(false);
     });
 
-    // Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -47,7 +43,6 @@ const Index = () => {
       setSession(session);
       
       if (!session) {
-        // Clear any user-specific state when logged out
         setMedications([]);
         setSelectedInterface(null);
       }
@@ -60,7 +55,7 @@ const Index = () => {
 
   useEffect(() => {
     const fetchMedications = async () => {
-      if (!session) return; // Don't fetch if not logged in
+      if (!session) return;
 
       const { data, error } = await supabase
         .from('medications')
@@ -181,21 +176,6 @@ const Index = () => {
 
   if (selectedInterface === "doctor" && !session) {
     return <AuthPage onBack={() => setSelectedInterface(null)} />;
-  }
-
-  if (selectedInterface === "test") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10">
-        <div className="container py-8">
-          <AppHeader 
-            onLogout={handleLogout}
-            onBack={() => setSelectedInterface(null)}
-            showLogout={!!session}
-          />
-          <TestRunner />
-        </div>
-      </div>
-    );
   }
 
   return (
