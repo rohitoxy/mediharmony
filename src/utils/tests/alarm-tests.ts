@@ -13,20 +13,13 @@ import {
   generateMedicationList 
 } from "./test-utils";
 
-// Mock the dependencies
-const mockPlayAlarmSequence = () => {};
-const mockStopSounds = () => {};
-const mockInitializeAudio = () => () => {};
-
-// Store the original function for later restoration if needed
-const originalUseAlarmSounds = useAlarmSounds;
-
-// Override the useAlarmSounds hook for testing
-// @ts-ignore - This is a test mock
-useAlarmSounds = (enabled: boolean) => ({
-  initializeAudio: mockInitializeAudio,
-  playAlarmSequence: mockPlayAlarmSequence,
-  stopSounds: mockStopSounds
+// Create a mock version of useAlarmSounds instead of trying to override the imported function
+const mockUseAlarmSounds = (enabled: boolean) => ({
+  initializeAudio: () => () => {},
+  playAlarmSequence: () => {},
+  playLoudAlarmSequence: () => {},
+  stopSounds: () => {},
+  audioRefs: { audioRef: { current: null }, loudAudioRef: { current: null }, soundIntervalRef: { current: null }, loudSoundIntervalRef: { current: null } }
 });
 
 // Mock toast
@@ -105,16 +98,13 @@ export const runAlarmTests = (): void => {
     
     // Verify the alarm should play when there are high priority alerts
     if (highPriorityCount > 0 && isSoundEnabled) {
-      if (typeof mockPlayAlarmSequence !== 'function') {
-        throw new Error("playAlarmSequence is not available");
+      // Just verify the condition is met, we can't test the actual sound in this environment
+      if (typeof mockUseAlarmSounds(true).playAlarmSequence !== 'function') {
+        throw new Error("Mock alarm function not available");
       }
     }
   });
 
   // Print test results
   testSuite.printResults();
-
-  // Restore original hook if needed
-  // @ts-ignore - This is a test mock cleanup
-  useAlarmSounds = originalUseAlarmSounds;
 };
