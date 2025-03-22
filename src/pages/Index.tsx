@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import LandingPage from "@/components/landing/LandingPage";
 import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
+import TestRunner from "@/components/TestRunner";
 
 export interface Medication {
   id: string;
@@ -180,6 +181,21 @@ const Index = () => {
 
   if (selectedInterface === "doctor" && !session) {
     return <AuthPage onBack={() => setSelectedInterface(null)} />;
+  }
+
+  if (selectedInterface === "test") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10">
+        <div className="container py-8">
+          <AppHeader 
+            onLogout={handleLogout}
+            onBack={() => setSelectedInterface(null)}
+            showLogout={!!session}
+          />
+          <TestRunner />
+        </div>
+      </div>
+    );
   }
 
   return (
