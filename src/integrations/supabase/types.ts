@@ -21,6 +21,7 @@ export type Database = {
           notes: string | null
           notification_time: string
           patient_id: string
+          priority: string | null
           room_number: string
           user_id: string | null
         }
@@ -35,6 +36,7 @@ export type Database = {
           notes?: string | null
           notification_time: string
           patient_id: string
+          priority?: string | null
           room_number: string
           user_id?: string | null
         }
@@ -49,6 +51,7 @@ export type Database = {
           notes?: string | null
           notification_time?: string
           patient_id?: string
+          priority?: string | null
           room_number?: string
           user_id?: string | null
         }

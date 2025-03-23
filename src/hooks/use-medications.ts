@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Medication } from "@/pages/Index";
+import { Medication } from "@/types/medication";
 
 export const useMedications = (initialMedications: Medication[]) => {
   const [medications, setMedications] = useState<Medication[]>([]);

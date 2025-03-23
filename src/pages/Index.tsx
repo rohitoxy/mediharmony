@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -68,7 +69,7 @@ const Index = () => {
           dosage: med.dosage,
           notes: med.notes || undefined,
           completed: med.completed || false,
-          priority: med.priority as 'high' | 'medium' | 'low' || 'medium',
+          priority: (med.priority as 'high' | 'medium' | 'low') || 'medium',
         }));
         setMedications(mappedMedications);
       }
