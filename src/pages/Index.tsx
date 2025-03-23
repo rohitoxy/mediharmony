@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -9,20 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import LandingPage from "@/components/landing/LandingPage";
 import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
-
-export interface Medication {
-  id: string;
-  patientId: string;
-  roomNumber: string;
-  medicineName: string;
-  dosage: string;
-  durationDays: number;
-  foodTiming: string;
-  time: string;
-  notes?: string;
-  completed?: boolean;
-  priority?: 'high' | 'medium' | 'low';
-}
+import { Medication } from "@/types/medication";
 
 const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -82,7 +68,7 @@ const Index = () => {
           dosage: med.dosage,
           notes: med.notes || undefined,
           completed: med.completed || false,
-          priority: med.priority || 'medium',
+          priority: med.priority as 'high' | 'medium' | 'low' || 'medium',
         }));
         setMedications(mappedMedications);
       }
