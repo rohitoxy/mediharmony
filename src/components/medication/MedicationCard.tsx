@@ -14,7 +14,9 @@ import {
   Calendar,
   Utensils,
   AlertCircle,
-  FileText
+  FileText,
+  AlertTriangle,
+  Info
 } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,6 +34,7 @@ interface MedicationCardProps {
     time: string;
     notes?: string;
     completed?: boolean;
+    priority?: 'high' | 'medium' | 'low';
   };
   timeStatus: "past" | "upcoming" | "future";
   onComplete: () => void;
@@ -41,6 +44,9 @@ interface MedicationCardProps {
 const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: MedicationCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isAlertActive = timeStatus === "upcoming" && !medication.completed;
+  
+  // Get priority or default to medium
+  const priority = medication.priority || 'medium';
 
   // Function to determine the color for the medication icon
   const getMedicationColor = () => {
@@ -48,6 +54,52 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
     if (isAlertActive) return "text-red-500";
     if (timeStatus === "past") return "text-gray-400";
     return "text-primary";
+  };
+  
+  // Function to determine the priority badge styling
+  const getPriorityBadge = () => {
+    switch(priority) {
+      case 'high':
+        return {
+          bg: 'bg-red-100',
+          text: 'text-red-600',
+          icon: <AlertTriangle className="w-3 h-3 mr-1" />,
+          label: 'High'
+        };
+      case 'medium':
+        return {
+          bg: 'bg-amber-100',
+          text: 'text-amber-600',
+          icon: <Info className="w-3 h-3 mr-1" />,
+          label: 'Medium'
+        };
+      case 'low':
+        return {
+          bg: 'bg-green-100',
+          text: 'text-green-600',
+          icon: <Check className="w-3 h-3 mr-1" />,
+          label: 'Low'
+        };
+      default:
+        return {
+          bg: 'bg-gray-100',
+          text: 'text-gray-600',
+          icon: <Info className="w-3 h-3 mr-1" />,
+          label: 'Medium'
+        };
+    }
+  };
+  
+  // Function to determine border color based on priority
+  const getPriorityBorderColor = () => {
+    if (medication.completed) return 'border-green-200';
+    
+    switch(priority) {
+      case 'high': return 'border-red-300';
+      case 'medium': return 'border-amber-200';
+      case 'low': return 'border-green-200';
+      default: return 'border-border/30';
+    }
   };
   
   // Function to determine timing icon based on food timing
@@ -64,6 +116,8 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
     }
   };
 
+  const priorityBadge = getPriorityBadge();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -72,7 +126,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
       whileHover={{ scale: 1.02 }}
     >
       <Card 
-        className={`relative shadow-md transition-all duration-300 bg-card overflow-hidden border border-border/30
+        className={`relative shadow-md transition-all duration-300 bg-card overflow-hidden border ${getPriorityBorderColor()}
           ${medication.completed ? 'bg-gray-50/50' : ''}
           ${isAlertActive ? 'shadow-lg ring-2 ring-red-500' : ''}
           ${isExpanded ? 'p-6' : 'p-4'}
@@ -82,7 +136,10 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
         <div className={`absolute top-0 left-0 w-1 h-full 
           ${medication.completed ? 'bg-green-500' : 
             timeStatus === "upcoming" ? 'bg-red-500' : 
-            timeStatus === "future" ? 'bg-primary' : 'bg-gray-300'}`} 
+            priority === 'high' ? 'bg-red-500' :
+            priority === 'medium' ? 'bg-amber-500' :
+            priority === 'low' ? 'bg-green-500' : 
+            'bg-gray-300'}`} 
         />
 
         {/* Top Actions */}
@@ -130,6 +187,15 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
               {medication.time}
             </Badge>
             
+            {/* Priority Badge */}
+            <Badge
+              variant="outline"
+              className={`${priorityBadge.bg} ${priorityBadge.text} flex items-center`}
+            >
+              {priorityBadge.icon}
+              {priorityBadge.label}
+            </Badge>
+            
             {isAlertActive && (
               <div className="flex items-center text-red-500 animate-pulse">
                 <AlertCircle className="w-4 h-4 mr-1" />
@@ -141,7 +207,11 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
           <div className="flex items-center">
             <div className={`p-1.5 rounded-full ${
               medication.completed ? 'bg-green-100' : 
-              isAlertActive ? 'bg-red-100' : 'bg-primary/10'
+              isAlertActive ? 'bg-red-100' : 
+              priority === 'high' ? 'bg-red-100' :
+              priority === 'medium' ? 'bg-amber-100' :
+              priority === 'low' ? 'bg-green-100' :
+              'bg-primary/10'
             } mr-3`}>
               <Pill className={`w-4 h-4 ${getMedicationColor()}`} />
             </div>

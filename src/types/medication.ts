@@ -11,6 +11,7 @@ export interface Medication {
   time: string;
   notes?: string;
   completed?: boolean;
+  priority?: 'high' | 'medium' | 'low';
 }
 
 export interface MedicationAlert {

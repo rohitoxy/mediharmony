@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
-  ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X
+  ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X,
+  AlertTriangle, Info, CheckCircle
 } from "lucide-react";
 
 interface Medication {
@@ -21,6 +23,7 @@ interface Medication {
   foodTiming: string;
   time: string;
   notes: string;
+  priority: 'high' | 'medium' | 'low';
 }
 
 const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
@@ -35,6 +38,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     foodTiming: "with",
     time: "10:00",
     notes: "",
+    priority: "medium" as 'high' | 'medium' | 'low',
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
   
@@ -52,6 +56,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       foodTiming: formData.foodTiming,
       time: formData.time,
       notes: formData.notes,
+      priority: formData.priority,
     };
     
     onMedicationAdd(medication);
@@ -73,6 +78,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         foodTiming: "with",
         time: "10:00",
         notes: "",
+        priority: "medium",
       });
       setFormSubmitted(false);
     }, 1000);
@@ -103,6 +109,23 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         </div>
         {label}
       </div>
+    </div>
+  );
+
+  const PriorityOption = ({ value, icon: Icon, color, label }: { 
+    value: 'high' | 'medium' | 'low',
+    icon: React.ElementType,
+    color: string,
+    label: string
+  }) => (
+    <div className="flex items-center space-x-3">
+      <RadioGroupItem value={value} id={`priority-${value}`} />
+      <div className={`flex items-center p-2 rounded-full ${color}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <Label htmlFor={`priority-${value}`} className="cursor-pointer">
+        {label}
+      </Label>
     </div>
   );
 
@@ -226,6 +249,35 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* Priority Section */}
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Priority</Label>
+                <RadioGroup 
+                  value={formData.priority} 
+                  onValueChange={(value) => setFormData({ ...formData, priority: value as 'high' | 'medium' | 'low' })}
+                  className="space-y-3"
+                >
+                  <PriorityOption 
+                    value="high" 
+                    icon={AlertTriangle} 
+                    color="bg-red-100 text-red-600" 
+                    label="High Priority" 
+                  />
+                  <PriorityOption 
+                    value="medium" 
+                    icon={Info} 
+                    color="bg-amber-100 text-amber-600" 
+                    label="Medium Priority" 
+                  />
+                  <PriorityOption 
+                    value="low" 
+                    icon={CheckCircle} 
+                    color="bg-green-100 text-green-600" 
+                    label="Low Priority" 
+                  />
+                </RadioGroup>
               </div>
 
               {/* Amount & How long section */}

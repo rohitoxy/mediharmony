@@ -31,10 +31,39 @@ export const MedicationList = ({
     );
   }
 
+  // Helper function to get priority weight for sorting
+  const getPriorityWeight = (priority?: 'high' | 'medium' | 'low'): number => {
+    switch (priority) {
+      case 'high': return 3;
+      case 'medium': return 2;
+      case 'low': return 1;
+      default: return 2; // Default to medium priority
+    }
+  };
+
+  // Sort medications by priority (high to low) and then by time
+  const sortedMedications = [...medications].sort((a, b) => {
+    // First sort by whether the medication is due now
+    const aIsUpcoming = getTimeStatus(a.time) === "upcoming";
+    const bIsUpcoming = getTimeStatus(b.time) === "upcoming";
+    
+    if (aIsUpcoming && !bIsUpcoming) return -1;
+    if (!aIsUpcoming && bIsUpcoming) return 1;
+    
+    // Then sort by priority
+    const aPriority = getPriorityWeight(a.priority);
+    const bPriority = getPriorityWeight(b.priority);
+    
+    if (aPriority !== bPriority) return bPriority - aPriority;
+    
+    // Finally sort by time
+    return a.time.localeCompare(b.time);
+  });
+
   return (
     <AnimatePresence>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-        {medications.map((medication) => (
+        {sortedMedications.map((medication) => (
           <MedicationCard
             key={medication.id}
             medication={medication}
