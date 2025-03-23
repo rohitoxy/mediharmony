@@ -11,6 +11,9 @@ export const createAudioPlayer = (soundUrl: string, shouldLoop: boolean = false,
 export const playSound = (audio: HTMLAudioElement | null) => {
   if (!audio) return;
   
+  // Reset the audio to start from the beginning
+  audio.currentTime = 0;
+  
   audio.play().catch(error => {
     console.error("Error playing audio:", error);
   });
@@ -20,6 +23,7 @@ export const pauseSound = (audio: HTMLAudioElement | null) => {
   if (!audio) return;
   
   audio.pause();
+  audio.currentTime = 0;
 };
 
 export const createRepeatingSound = (
@@ -30,25 +34,31 @@ export const createRepeatingSound = (
 ) => {
   if (!audio) return;
   
-  playSound(audio);
-  
+  // Clear any existing interval
   if (intervalRef.current) {
     clearInterval(intervalRef.current);
   }
   
-  let playCount = 0;
+  // Play sound immediately
+  playSound(audio);
+  
+  let playCount = 1; // Start at 1 because we already played once
+  
+  // Set up interval for repeated playing
   intervalRef.current = setInterval(() => {
     if (playCount < maxCount && audio) {
       playSound(audio);
       playCount++;
     } else if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
   }, intervalMs);
   
   return () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
   };
 };

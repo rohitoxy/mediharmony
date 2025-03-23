@@ -53,7 +53,8 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     
     if (highPriorityAlert) {
       if (isSoundEnabled) {
-        playAlarmSequence();
+        // Use the loud alarm sequence for high priority alerts
+        playLoudAlarmSequence();
       }
       
       // Also send a local notification for this alert
@@ -70,8 +71,13 @@ export const useMedicationAlarm = (medications: Medication[]) => {
           );
         }
       }
+    } else if (activeAlerts.some(a => a.priority === 'medium' && !a.acknowledged)) {
+      // Play the regular alarm for medium priority alerts
+      if (isSoundEnabled) {
+        playAlarmSequence();
+      }
     }
-  }, [activeAlerts, isSoundEnabled, playAlarmSequence, localNotificationsEnabled, sendNotification, medications]);
+  }, [activeAlerts, isSoundEnabled, playAlarmSequence, playLoudAlarmSequence, localNotificationsEnabled, sendNotification, medications]);
 
   const handleAcknowledgeAlert = useCallback((alertId: string) => {
     console.log('Using handleAcknowledgeAlert for:', alertId);

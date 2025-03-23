@@ -9,7 +9,8 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
   const loudSoundIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeAudio = useCallback(() => {
-    audioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3", false);
+    // Use more urgent alert sounds
+    audioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3", false, 0.8);
     loudAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2887/2887-preview.mp3", false, 1.0);
     
     return () => {
@@ -23,34 +24,42 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
       }
       if (soundIntervalRef.current) {
         clearInterval(soundIntervalRef.current);
+        soundIntervalRef.current = null;
       }
       if (loudSoundIntervalRef.current) {
         clearInterval(loudSoundIntervalRef.current);
+        loudSoundIntervalRef.current = null;
       }
     };
   }, []);
 
   const playAlarmSequence = useCallback(() => {
     if (!isSoundEnabled || !audioRef.current) return;
-    createRepeatingSound(audioRef.current, 10000, 12, soundIntervalRef);
+    // Play alerts more frequently for warning notifications (every 5 seconds, 10 times)
+    createRepeatingSound(audioRef.current, 5000, 10, soundIntervalRef);
   }, [isSoundEnabled]);
 
   const playLoudAlarmSequence = useCallback(() => {
     if (!isSoundEnabled || !loudAudioRef.current) return;
-    createRepeatingSound(loudAudioRef.current, 5000, 24, loudSoundIntervalRef);
+    // Play alerts more frequently and more times for critical notifications (every 3 seconds, 20 times)
+    createRepeatingSound(loudAudioRef.current, 3000, 20, loudSoundIntervalRef);
   }, [isSoundEnabled]);
 
   const stopSounds = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       if (soundIntervalRef.current) {
         clearInterval(soundIntervalRef.current);
+        soundIntervalRef.current = null;
       }
     }
     if (loudAudioRef.current) {
       loudAudioRef.current.pause();
+      loudAudioRef.current.currentTime = 0;
       if (loudSoundIntervalRef.current) {
         clearInterval(loudSoundIntervalRef.current);
+        loudSoundIntervalRef.current = null;
       }
     }
   }, []);
