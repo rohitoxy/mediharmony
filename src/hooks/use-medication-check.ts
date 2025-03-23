@@ -39,7 +39,9 @@ export const useMedicationCheck = (medications: Medication[]) => {
           const medicationId = medication.id;
           
           // Check if this alert is already active
-          const alertExists = activeAlerts.some(alert => alert.id.startsWith(medicationId));
+          const alertExists = activeAlerts.some(alert => 
+            alert.id.startsWith(medicationId) && !alert.id.includes("-warning")
+          );
           
           if (!alertExists) {
             const alertId = `${medicationId}-${now.toISOString()}`;
@@ -64,6 +66,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
         }
         
         // Also check for 1-minute warning (exact time minus 1 minute)
+        // But create a warning notification without sound
         const warningMinuteTime = new Date();
         warningMinuteTime.setHours(hours, minutes, 0, 0);
         warningMinuteTime.setMinutes(warningMinuteTime.getMinutes() - 1);

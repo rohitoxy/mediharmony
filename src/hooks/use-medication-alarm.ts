@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Medication, MedicationAlert } from "@/types/medication";
 import { useAlarmSounds } from "@/hooks/use-alarm-sounds";
@@ -49,11 +48,17 @@ export const useMedicationAlarm = (medications: Medication[]) => {
 
   // When a high priority alert is active, play the alarm
   useEffect(() => {
-    const highPriorityAlert = activeAlerts.find(a => a.priority === 'high' && !a.acknowledged);
+    // Only play sounds for high priority alerts that are not warning alerts
+    const highPriorityAlert = activeAlerts.find(a => 
+      a.priority === 'high' && 
+      !a.acknowledged && 
+      !a.id.includes("-warning")
+    );
     
     if (highPriorityAlert) {
       if (isSoundEnabled) {
-        // Use the loud alarm sequence for high priority alerts
+        // Use the loud alarm sequence for high priority alerts at exact time
+        console.log('Playing loud alarm for high priority alert:', highPriorityAlert.id);
         playLoudAlarmSequence();
       }
       
@@ -71,11 +76,9 @@ export const useMedicationAlarm = (medications: Medication[]) => {
           );
         }
       }
-    } else if (activeAlerts.some(a => a.priority === 'medium' && !a.acknowledged)) {
-      // Play the regular alarm for medium priority alerts
-      if (isSoundEnabled) {
-        playAlarmSequence();
-      }
+    } else {
+      // No active sounds for medium priority (warning) alerts
+      // We'll just keep the visual notifications without sound
     }
   }, [activeAlerts, isSoundEnabled, playAlarmSequence, playLoudAlarmSequence, localNotificationsEnabled, sendNotification, medications]);
 
