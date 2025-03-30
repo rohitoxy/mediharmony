@@ -9,19 +9,23 @@ interface LandingPageProps {
 
 const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
   return (
-    <div className="min-h-screen bg-[#F0F8FF] flex flex-col items-center justify-center p-6 relative">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&auto=format&fit=crop&q=60')] opacity-5 bg-cover bg-center" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Abstract background shapes */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+      </div>
       
       {/* Floating Icons Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[Clock, Pill, AlertCircle, Check].map((Icon, index) => (
+        {[Clock, Pill, AlertCircle, Check, Stethoscope].map((Icon, index) => (
           <motion.div
             key={index}
-            className="absolute text-slate-300"
+            className="absolute text-primary/30"
             initial={{ 
               x: Math.random() * 100, 
               y: Math.random() * 100,
-              opacity: 0.3,
+              opacity: 0.2,
               scale: 0.5 + Math.random() * 1.5
             }}
             animate={{ 
@@ -53,13 +57,13 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
           className="flex flex-col items-center justify-center gap-2"
         >
           <motion.div 
-            className="bg-white p-5 rounded-full shadow-lg"
+            className="bg-gradient-to-br from-primary to-primary/80 p-5 rounded-full shadow-lg shadow-primary/30"
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Pill className="w-12 h-12 text-[#A5D8FF]" />
+            <Pill className="w-12 h-12 text-white" />
           </motion.div>
-          <h1 className="text-5xl font-bold mb-4 text-slate-700 mt-4">
+          <h1 className="text-5xl font-bold mb-4 text-gradient mt-4">
             Med Alert
           </h1>
           <p className="text-xl text-slate-600 max-w-xs mx-auto mt-2">
@@ -71,7 +75,7 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-lg"
+          className="bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-xl border border-primary/10"
         >
           <h2 className="text-2xl font-semibold text-slate-700 mb-6">Choose your interface</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -81,7 +85,7 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
               className="w-full"
             >
               <Button
-                className="w-full sm:w-48 h-14 text-base shadow-lg bg-[#A5D8FF] hover:bg-[#8ECAFF] text-slate-700 font-medium gap-2 group"
+                className="w-full sm:w-48 h-14 text-base shadow-lg bg-primary hover:bg-primary/90 text-white font-medium gap-2 group"
                 onClick={() => onInterfaceSelect("doctor")}
               >
                 <motion.div
@@ -101,7 +105,7 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
               className="w-full"
             >
               <Button
-                className="w-full sm:w-48 h-14 text-base shadow-lg bg-[#A5D8FF] hover:bg-[#8ECAFF] text-slate-700 font-medium gap-2 group"
+                className="w-full sm:w-48 h-14 text-base shadow-lg bg-accent hover:bg-accent/90 text-white font-medium gap-2 group"
                 onClick={() => onInterfaceSelect("nurse")}
               >
                 <motion.div

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,19 +26,19 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#4A9F8F",
+          DEFAULT: "#4361EE", // More vibrant blue
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#E8E6F3",
+          DEFAULT: "#F4F1FF", // Lighter purple tint
           foreground: "#2D3748",
         },
         accent: {
-          DEFAULT: "#FF7F6B",
+          DEFAULT: "#FF5D8F", // Vibrant pink
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#F7F7F7",
+          DEFAULT: "#F9F7FF", // Soft purple tint
           foreground: "#6B7280",
         },
         card: {
@@ -63,11 +64,27 @@ export default {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
+        "pulse-soft": "pulse-soft 2s infinite ease-in-out",
+        "float": "float 3s infinite ease-in-out",
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))',
+        'gradient-dots': 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+        'gradient-primary': 'linear-gradient(to right, #4361EE, #3A0CA3)',
+        'gradient-accent': 'linear-gradient(to right, #FF5D8F, #FF8E72)',
       },
     },
   },
