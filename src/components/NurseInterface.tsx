@@ -1,3 +1,4 @@
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Medication } from "@/types/medication";
@@ -11,6 +12,7 @@ import { NurseStats } from "./nurse/NurseStats";
 import { MedicationFilter } from "./nurse/MedicationFilter";
 import { MedicationList } from "./nurse/MedicationList";
 import MedicationFullScreenAlert from "./medication/MedicationFullScreenAlert";
+import MedicationReminderPopup from "./medication/MedicationReminderPopup";
 
 const NurseInterface = ({ medications: initialMedications }: { medications: Medication[] }) => {
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
@@ -28,11 +30,23 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     highPriorityCount,
   } = useMedicationAlarm(medications);
 
-  // Find any unacknowledged alert to show as full screen alert
-  // Start with high priority, then medium, then low
-  const activeHighPriorityAlert = groupedAlerts.high?.find(alert => !alert.acknowledged);
-  const activeMediumPriorityAlert = groupedAlerts.medium?.find(alert => !alert.acknowledged);
-  const activeLowPriorityAlert = groupedAlerts.low?.find(alert => !alert.acknowledged);
+  // Find alerts to display
+  // Regular alerts (not warnings) for full screen display
+  const activeHighPriorityAlert = groupedAlerts.high?.find(alert => 
+    !alert.acknowledged && !alert.id.includes("-warning")
+  );
+  const activeMediumPriorityAlert = groupedAlerts.medium?.find(alert => 
+    !alert.acknowledged && !alert.id.includes("-warning")
+  );
+  const activeLowPriorityAlert = groupedAlerts.low?.find(alert => 
+    !alert.acknowledged && !alert.id.includes("-warning")
+  );
+  
+  // For warning alerts (one minute reminders), find the first unacknowledged warning
+  const warningAlert = 
+    (groupedAlerts.high?.find(alert => !alert.acknowledged && alert.id.includes("-warning"))) ||
+    (groupedAlerts.medium?.find(alert => !alert.acknowledged && alert.id.includes("-warning"))) ||
+    (groupedAlerts.low?.find(alert => !alert.acknowledged && alert.id.includes("-warning")));
   
   // Get the highest priority active alert to show (only one at a time)
   const activeAlert = activeHighPriorityAlert || activeMediumPriorityAlert || activeLowPriorityAlert;
@@ -68,6 +82,10 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
       }
     }
     return medicationId;
+  };
+
+  const handleReminderClose = (alertId: string) => {
+    acknowledgeAlert(alertId);
   };
 
   return (
@@ -123,12 +141,22 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Full Screen Alert for All Priority Medications */}
+      {/* Full Screen Alert for Regular Medication Alerts */}
       <AnimatePresence>
         {activeAlert && (
           <MedicationFullScreenAlert
             alert={activeAlert}
             onAcknowledge={handleAlertAcknowledge}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Small Popup for One-Minute Warnings */}
+      <AnimatePresence>
+        {warningAlert && (
+          <MedicationReminderPopup
+            alert={warningAlert}
+            onClose={handleReminderClose}
           />
         )}
       </AnimatePresence>

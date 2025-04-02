@@ -53,9 +53,9 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     }
   }, [localNotificationsEnabled, medications, scheduleMedicationNotifications]);
 
-  // Play sounds based on alert priority - play sound for all priorities
+  // Play sounds based on alert priority - only for regular alerts, not warning alerts
   useEffect(() => {
-    // Find unacknowledged alerts for each priority
+    // Find unacknowledged alerts for each priority (excluding warning alerts)
     const highPriorityAlert = activeAlerts.find(a => 
       a.priority === 'high' && 
       !a.acknowledged && 
@@ -74,7 +74,7 @@ export const useMedicationAlarm = (medications: Medication[]) => {
       !a.id.includes("-warning")
     );
     
-    // Play full screen alert sound for the highest priority alert
+    // Play full screen alert sound for the highest priority alert (excluding warning alerts)
     if (isSoundEnabled) {
       if (highPriorityAlert) {
         console.log('Playing full screen alarm for high priority alert:', highPriorityAlert.id);
@@ -98,22 +98,10 @@ export const useMedicationAlarm = (medications: Medication[]) => {
         if (localNotificationsEnabled) {
           sendNotificationForAlert(lowPriorityAlert);
         }
-      } else {
-        // If no full screen alerts, check for warning alerts
-        for (const priority of ['high', 'medium', 'low'] as const) {
-          const warningAlert = activeAlerts.find(a => 
-            a.priority === priority && 
-            !a.acknowledged &&
-            a.id.includes("-warning")
-          );
-          
-          if (warningAlert) {
-            console.log(`Playing ${priority} priority alarm for warning alert:`, warningAlert.id);
-            playAlarmByPriority(priority);
-            break; // Only play one sound at a time
-          }
-        }
       }
+      
+      // We're removing the sound playing for warning alerts
+      // Warning alerts will now just show a small popup without sound
     }
   }, [activeAlerts, isSoundEnabled, playAlarmByPriority, playFullScreenAlarm, localNotificationsEnabled, sendNotification, medications]);
 
