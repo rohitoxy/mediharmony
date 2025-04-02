@@ -3,72 +3,123 @@ import { useCallback, useRef } from "react";
 import { createAudioPlayer, createRepeatingSound } from "@/utils/audio-player";
 
 export const useAlarmSounds = (isSoundEnabled: boolean) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const loudAudioRef = useRef<HTMLAudioElement | null>(null);
-  const soundIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const loudSoundIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Create separate audio refs for each priority level
+  const lowPriorityAudioRef = useRef<HTMLAudioElement | null>(null);
+  const mediumPriorityAudioRef = useRef<HTMLAudioElement | null>(null);
+  const highPriorityAudioRef = useRef<HTMLAudioElement | null>(null);
+  const fullScreenAudioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Sound interval refs
+  const lowSoundIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const mediumSoundIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const highSoundIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const fullScreenIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeAudio = useCallback(() => {
-    // Use more urgent alert sounds
-    audioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3", false, 0.8);
-    loudAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2887/2887-preview.mp3", false, 1.0);
+    // Different sounds for different priority levels
+    lowPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3", false, 0.6);
+    mediumPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3", false, 0.7);
+    highPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/1285/1285-preview.mp3", false, 0.8);
+    fullScreenAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2887/2887-preview.mp3", false, 1.0);
     
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      if (loudAudioRef.current) {
-        loudAudioRef.current.pause();
-        loudAudioRef.current = null;
-      }
-      if (soundIntervalRef.current) {
-        clearInterval(soundIntervalRef.current);
-        soundIntervalRef.current = null;
-      }
-      if (loudSoundIntervalRef.current) {
-        clearInterval(loudSoundIntervalRef.current);
-        loudSoundIntervalRef.current = null;
-      }
+      // Clean up all audio references
+      [lowPriorityAudioRef, mediumPriorityAudioRef, highPriorityAudioRef, fullScreenAudioRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.pause();
+          ref.current = null;
+        }
+      });
+      
+      // Clean up all interval references
+      [lowSoundIntervalRef, mediumSoundIntervalRef, highSoundIntervalRef, fullScreenIntervalRef].forEach(ref => {
+        if (ref.current) {
+          clearInterval(ref.current);
+          ref.current = null;
+        }
+      });
     };
   }, []);
 
-  const playAlarmSequence = useCallback(() => {
-    if (!isSoundEnabled || !audioRef.current) return;
-    // Play alerts more frequently for warning notifications (every 5 seconds, 10 times)
-    createRepeatingSound(audioRef.current, 5000, 10, soundIntervalRef);
+  const playAlarmByPriority = useCallback((priority: 'low' | 'medium' | 'high') => {
+    if (!isSoundEnabled) return;
+    
+    // Select the appropriate audio reference based on priority
+    let audioRef: React.MutableRefObject<HTMLAudioElement | null>;
+    let intervalRef: React.MutableRefObject<NodeJS.Timeout | null>;
+    let repeatInterval: number;
+    let repeatCount: number;
+    
+    switch (priority) {
+      case 'low':
+        audioRef = lowPriorityAudioRef;
+        intervalRef = lowSoundIntervalRef;
+        repeatInterval = 8000; // Less frequent for low priority
+        repeatCount = 3; // Fewer repeats
+        break;
+      case 'medium':
+        audioRef = mediumPriorityAudioRef;
+        intervalRef = mediumSoundIntervalRef;
+        repeatInterval = 5000; // Medium frequency
+        repeatCount = 5; // Medium repeats
+        break;
+      case 'high':
+        audioRef = highPriorityAudioRef;
+        intervalRef = highSoundIntervalRef;
+        repeatInterval = 3000; // More frequent for high priority
+        repeatCount = 8; // More repeats
+        break;
+      default:
+        audioRef = mediumPriorityAudioRef;
+        intervalRef = mediumSoundIntervalRef;
+        repeatInterval = 5000;
+        repeatCount = 5;
+    }
+    
+    // Play the selected alert sound
+    if (audioRef.current) {
+      createRepeatingSound(audioRef.current, repeatInterval, repeatCount, intervalRef);
+    }
   }, [isSoundEnabled]);
 
-  const playLoudAlarmSequence = useCallback(() => {
-    if (!isSoundEnabled || !loudAudioRef.current) return;
-    // Play alerts more frequently and more times for critical notifications (every 3 seconds, 20 times)
-    createRepeatingSound(loudAudioRef.current, 3000, 20, loudSoundIntervalRef);
+  const playFullScreenAlarm = useCallback(() => {
+    if (!isSoundEnabled || !fullScreenAudioRef.current) return;
+    
+    // Play the more urgent full screen alert sound
+    createRepeatingSound(fullScreenAudioRef.current, 2500, 15, fullScreenIntervalRef);
   }, [isSoundEnabled]);
 
   const stopSounds = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      if (soundIntervalRef.current) {
-        clearInterval(soundIntervalRef.current);
-        soundIntervalRef.current = null;
+    // Stop all sounds and clear all intervals
+    [lowPriorityAudioRef, mediumPriorityAudioRef, highPriorityAudioRef, fullScreenAudioRef].forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
       }
-    }
-    if (loudAudioRef.current) {
-      loudAudioRef.current.pause();
-      loudAudioRef.current.currentTime = 0;
-      if (loudSoundIntervalRef.current) {
-        clearInterval(loudSoundIntervalRef.current);
-        loudSoundIntervalRef.current = null;
+    });
+    
+    [lowSoundIntervalRef, mediumSoundIntervalRef, highSoundIntervalRef, fullScreenIntervalRef].forEach(ref => {
+      if (ref.current) {
+        clearInterval(ref.current);
+        ref.current = null;
       }
-    }
+    });
   }, []);
 
   return {
     initializeAudio,
-    playAlarmSequence,
-    playLoudAlarmSequence,
+    playAlarmByPriority,
+    playFullScreenAlarm,
     stopSounds,
-    audioRefs: { audioRef, loudAudioRef, soundIntervalRef, loudSoundIntervalRef }
+    audioRefs: { 
+      lowPriorityAudioRef,
+      mediumPriorityAudioRef,
+      highPriorityAudioRef,
+      fullScreenAudioRef,
+      lowSoundIntervalRef,
+      mediumSoundIntervalRef,
+      highSoundIntervalRef,
+      fullScreenIntervalRef
+    }
   };
 };

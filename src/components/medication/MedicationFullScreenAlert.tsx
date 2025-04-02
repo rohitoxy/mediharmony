@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlarmClock, CheckCircle2, Bell, AlertTriangle, Info } from 'lucide-react';
 import { motion } from 'framer-motion';

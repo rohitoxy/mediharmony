@@ -82,14 +82,15 @@ export const NurseHeader = ({
             variant="outline"
             size="sm"
             onClick={toggleSound}
-            title={isSoundEnabled ? "Disable sound" : "Enable sound"}
-            className="bg-card"
+            title={isSoundEnabled ? "Disable sounds" : "Enable sounds"}
+            className={`bg-card ${isSoundEnabled ? 'border-primary/30' : 'border-muted-foreground/30'}`}
           >
             {isSoundEnabled ? (
               <Volume2 className="h-4 w-4 text-primary" />
             ) : (
               <VolumeX className="h-4 w-4 text-muted-foreground" />
             )}
+            <span className="sr-only ml-2 md:not-sr-only text-xs">{isSoundEnabled ? "Sound On" : "Sound Off"}</span>
           </Button>
         </div>
       </div>
