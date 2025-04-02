@@ -58,7 +58,8 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-red-600 hover:bg-red-700',
           animationColor: 'rgba(234, 56, 76, 0.3)',
           icon: <AlertTriangle className="h-7 w-7 text-red-500 animate-pulse" />,
-          label: 'This medication is urgent and needs to be administered immediately!'
+          label: 'This medication is urgent and needs to be administered immediately!',
+          bgOpacity: 'bg-black/90'
         };
       case 'medium':
         return {
@@ -69,7 +70,8 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-amber-600 hover:bg-amber-700',
           animationColor: 'rgba(245, 158, 11, 0.3)',
           icon: <Bell className="h-7 w-7 text-amber-500 animate-pulse" />,
-          label: 'This medication needs to be administered soon!'
+          label: 'This medication needs to be administered soon!',
+          bgOpacity: 'bg-black/80'
         };
       case 'low':
         return {
@@ -80,7 +82,8 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-blue-500 hover:bg-blue-600',
           animationColor: 'rgba(59, 130, 246, 0.3)',
           icon: <Info className="h-7 w-7 text-blue-500 animate-pulse" />,
-          label: 'This medication is scheduled for administration.'
+          label: 'This medication is scheduled for administration.',
+          bgOpacity: 'bg-black/70'
         };
       default:
         return {
@@ -91,12 +94,24 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-red-600 hover:bg-red-700',
           animationColor: 'rgba(234, 56, 76, 0.3)',
           icon: <AlertTriangle className="h-7 w-7 text-red-500 animate-pulse" />,
-          label: 'This medication needs to be administered immediately!'
+          label: 'This medication needs to be administered immediately!',
+          bgOpacity: 'bg-black/90'
         };
     }
   };
 
   const styles = getPriorityStyles();
+
+  const pulseAnimation = {
+    scale: [1, 1.03, 1],
+    opacity: [1, 0.9, 1]
+  };
+
+  const pulseTransition = {
+    duration: alert.priority === 'high' ? 0.8 : alert.priority === 'medium' ? 1.2 : 1.5,
+    ease: "easeInOut",
+    repeat: Infinity
+  };
 
   return (
     <>
@@ -104,7 +119,7 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+        className={`fixed inset-0 z-50 ${styles.bgOpacity} backdrop-blur-md flex items-center justify-center p-4`}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
@@ -116,25 +131,31 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           transition={{
             boxShadow: {
               repeat: Infinity,
-              duration: 2,
+              duration: alert.priority === 'high' ? 1.5 : alert.priority === 'medium' ? 2 : 2.5,
               ease: "easeInOut"
             }
           }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className={`bg-card w-full max-w-md rounded-lg shadow-2xl border-2 ${styles.borderColor} overflow-hidden animate-pulse`}
+          className={`bg-card w-full max-w-md rounded-lg shadow-2xl border-2 ${styles.borderColor} overflow-hidden`}
         >
-          <div className={`bg-gradient-to-r ${styles.gradientFrom} ${styles.gradientTo} p-5 flex items-center gap-3`}>
+          <motion.div 
+            className={`bg-gradient-to-r ${styles.gradientFrom} ${styles.gradientTo} p-5 flex items-center gap-3`}
+            animate={pulseAnimation}
+            transition={pulseTransition}
+          >
             <div className="bg-white rounded-full p-2.5 shadow-md">
               {styles.icon}
             </div>
             <h2 className="text-2xl font-bold text-white">{alert.title}</h2>
-          </div>
+          </motion.div>
           
           <div className="p-6 space-y-6">
             <div className="text-center">
               <p className="text-2xl font-bold">{alert.body}</p>
-              <p className={`mt-2 font-semibold ${alert.priority === 'high' ? 'text-red-500' : 
-                alert.priority === 'medium' ? 'text-amber-500' : 'text-blue-500'}`}>
+              <p className={`mt-2 font-semibold ${
+                alert.priority === 'high' ? 'text-red-500' : 
+                alert.priority === 'medium' ? 'text-amber-500' : 'text-blue-500'
+              }`}>
                 {styles.label}
               </p>
             </div>
@@ -165,7 +186,7 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmAcknowledge}
-              className={`${styles.buttonBg} text-white hover:${styles.buttonBg}`}
+              className={`${styles.buttonBg} text-white`}
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Confirm

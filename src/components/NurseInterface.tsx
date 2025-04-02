@@ -1,4 +1,3 @@
-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Medication } from "@/types/medication";
@@ -29,8 +28,14 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     highPriorityCount,
   } = useMedicationAlarm(medications);
 
-  // Find if there's an unacknowledged high priority alert
+  // Find any unacknowledged alert to show as full screen alert
+  // Start with high priority, then medium, then low
   const activeHighPriorityAlert = groupedAlerts.high?.find(alert => !alert.acknowledged);
+  const activeMediumPriorityAlert = groupedAlerts.medium?.find(alert => !alert.acknowledged);
+  const activeLowPriorityAlert = groupedAlerts.low?.find(alert => !alert.acknowledged);
+  
+  // Get the highest priority active alert to show (only one at a time)
+  const activeAlert = activeHighPriorityAlert || activeMediumPriorityAlert || activeLowPriorityAlert;
 
   const getTimeStatus = (medicationTime: string) => {
     const [hours, minutes] = medicationTime.split(":");
@@ -118,11 +123,11 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Full Screen Alert for High Priority Medications */}
+      {/* Full Screen Alert for All Priority Medications */}
       <AnimatePresence>
-        {activeHighPriorityAlert && (
+        {activeAlert && (
           <MedicationFullScreenAlert
-            alert={activeHighPriorityAlert}
+            alert={activeAlert}
             onAcknowledge={handleAlertAcknowledge}
           />
         )}

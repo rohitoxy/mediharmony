@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Medication, MedicationAlert } from "@/types/medication";
 import { useAlarmSounds } from "@/hooks/use-alarm-sounds";
 import { useFirebaseNotifications } from "@/hooks/use-firebase-notifications";
@@ -53,52 +53,84 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     }
   }, [localNotificationsEnabled, medications, scheduleMedicationNotifications]);
 
-  // Play sounds based on alert priority
+  // Play sounds based on alert priority - play sound for all priorities
   useEffect(() => {
-    // Find high priority alerts that need attention (not including warning alerts)
+    // Find unacknowledged alerts for each priority
     const highPriorityAlert = activeAlerts.find(a => 
       a.priority === 'high' && 
       !a.acknowledged && 
       !a.id.includes("-warning")
     );
     
-    if (highPriorityAlert) {
-      if (isSoundEnabled) {
+    const mediumPriorityAlert = activeAlerts.find(a => 
+      a.priority === 'medium' && 
+      !a.acknowledged && 
+      !a.id.includes("-warning")
+    );
+    
+    const lowPriorityAlert = activeAlerts.find(a => 
+      a.priority === 'low' && 
+      !a.acknowledged && 
+      !a.id.includes("-warning")
+    );
+    
+    // Play full screen alert sound for the highest priority alert
+    if (isSoundEnabled) {
+      if (highPriorityAlert) {
         console.log('Playing full screen alarm for high priority alert:', highPriorityAlert.id);
-        // Use the more urgent sound for high priority full screen alerts
-        playFullScreenAlarm();
+        playFullScreenAlarm('high');
         
-        // Also send a local notification for this alert
+        // Also send a local notification
         if (localNotificationsEnabled) {
-          const [medicationId] = highPriorityAlert.id.split('-');
-          const medication = medications.find(med => med.id === medicationId);
-          
-          if (medication) {
-            sendNotification(
-              highPriorityAlert.title,
-              highPriorityAlert.body,
-              medicationId,
-              'high'
-            );
-          }
+          sendNotificationForAlert(highPriorityAlert);
         }
-      }
-    } else {
-      // Check for alerts by priority and play appropriate sounds
-      for (const priority of ['high', 'medium', 'low'] as const) {
-        const priorityAlert = activeAlerts.find(a => 
-          a.priority === priority && 
-          !a.acknowledged
-        );
+      } else if (mediumPriorityAlert) {
+        console.log('Playing full screen alarm for medium priority alert:', mediumPriorityAlert.id);
+        playFullScreenAlarm('medium');
         
-        if (priorityAlert && isSoundEnabled) {
-          console.log(`Playing ${priority} priority alarm for alert:`, priorityAlert.id);
-          playAlarmByPriority(priority);
-          break; // Only play one sound at a time, prioritizing higher priority alerts
+        if (localNotificationsEnabled) {
+          sendNotificationForAlert(mediumPriorityAlert);
+        }
+      } else if (lowPriorityAlert) {
+        console.log('Playing full screen alarm for low priority alert:', lowPriorityAlert.id);
+        playFullScreenAlarm('low');
+        
+        if (localNotificationsEnabled) {
+          sendNotificationForAlert(lowPriorityAlert);
+        }
+      } else {
+        // If no full screen alerts, check for warning alerts
+        for (const priority of ['high', 'medium', 'low'] as const) {
+          const warningAlert = activeAlerts.find(a => 
+            a.priority === priority && 
+            !a.acknowledged &&
+            a.id.includes("-warning")
+          );
+          
+          if (warningAlert) {
+            console.log(`Playing ${priority} priority alarm for warning alert:`, warningAlert.id);
+            playAlarmByPriority(priority);
+            break; // Only play one sound at a time
+          }
         }
       }
     }
   }, [activeAlerts, isSoundEnabled, playAlarmByPriority, playFullScreenAlarm, localNotificationsEnabled, sendNotification, medications]);
+
+  // Helper function to send notification for an alert
+  const sendNotificationForAlert = (alert: MedicationAlert) => {
+    const [medicationId] = alert.id.split('-');
+    const medication = medications.find(med => med.id === medicationId);
+    
+    if (medication) {
+      sendNotification(
+        alert.title,
+        alert.body,
+        medicationId,
+        alert.priority
+      );
+    }
+  };
 
   const handleAcknowledgeAlert = useCallback((alertId: string) => {
     console.log('Using handleAcknowledgeAlert for:', alertId);
