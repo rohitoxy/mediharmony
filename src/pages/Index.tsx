@@ -84,7 +84,7 @@ const Index = () => {
         .from('medications')
         .insert([
           {
-            patient_id: medication.patientId,
+            patient_id: medication.patientId, // This is now auto-generated
             room_number: medication.roomNumber,
             medicine_name: medication.medicineName,
             dosage: medication.dosage,

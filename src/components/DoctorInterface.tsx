@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +28,6 @@ interface Medication {
 const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    patientId: "",
     patientName: "",
     roomNumber: "",
     medicineName: "",
@@ -42,13 +40,23 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
   
+  const generateUniquePatientId = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let id = "P-";
+    for (let i = 0; i < 5; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Extract only the fields needed for the Medication type
+    const patientId = generateUniquePatientId();
+    
     const medication: Medication = {
       id: Date.now().toString(),
-      patientId: formData.patientId,
+      patientId,
       roomNumber: formData.roomNumber,
       medicineName: formData.medicineName,
       dosage: formData.dosage,
@@ -69,7 +77,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     
     setTimeout(() => {
       setFormData({
-        patientId: "",
         patientName: "",
         roomNumber: "",
         medicineName: "",
@@ -182,21 +189,8 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 <h1 className="text-2xl font-bold ml-2">Add Plan</h1>
               </div>
 
-              {/* Patient details section */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Patient details</Label>
-                <div className="flex gap-3">
-                  <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
-                    <User className="h-5 w-5 mr-3 text-gray-500" />
-                    <Input
-                      value={formData.patientId}
-                      onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-                      required
-                      className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
-                      placeholder="Patient ID"
-                    />
-                  </div>
-                </div>
                 <div className="flex gap-3">
                   <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
                     <User className="h-5 w-5 mr-3 text-gray-500" />
@@ -223,9 +217,8 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Pills name section - simplified without autocomplete */}
               <div className="space-y-2">
-                <Label className="text-base font-medium">Pills name</Label>
+                <Label className="text-base font-medium">Medicine name</Label>
                 <div className="relative">
                   <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
                     <Pill className="h-5 w-5 mr-3 text-gray-500" />
@@ -251,7 +244,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Priority Section */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">Priority</Label>
                 <RadioGroup 
@@ -280,7 +272,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </RadioGroup>
               </div>
 
-              {/* Amount & How long section */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Amount & How long?</Label>
                 <div className="flex gap-3">
@@ -313,7 +304,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Notes field */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Notes (optional)</Label>
                 <div className="flex items-center">
@@ -328,7 +318,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Food & Pills section */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Food & Pills</Label>
                 <div className="grid grid-cols-3 gap-3">
@@ -353,7 +342,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Notification section */}
               <div className="space-y-2">
                 <Label className="text-base font-medium">Notification</Label>
                 <div className="flex justify-between">
@@ -379,7 +367,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                 </div>
               </div>
 
-              {/* Submit button */}
               <Button 
                 type="submit" 
                 className="w-full py-6 rounded-xl bg-green-500 hover:bg-green-600 text-white text-lg font-medium mt-8"

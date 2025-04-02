@@ -2,9 +2,9 @@
 // Types related to medications and alerts
 export interface Medication {
   id: string;
-  patientId: string;
+  patientId: string; // This is now auto-generated and unique
   roomNumber: string;
-  medicineName: string;
+  medicineName: string; // Changed from pillsName
   dosage: string;
   durationDays: number;
   foodTiming: string;
