@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Medication, MedicationAlert } from "@/types/medication";
 import { useAlarmSounds } from "@/hooks/use-alarm-sounds";
@@ -25,30 +26,36 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     scheduleMedicationNotifications
   } = useLocalNotifications(isSoundEnabled);
 
-  // Fix: Provide the missing third argument (playAlarmSequence)
+  // Provide the missing third argument (playAlarmSequence)
   const { notificationsEnabled } = useFirebaseNotifications(
     isSoundEnabled,
     (alerts) => {
-      // No-op for this implementation
+      // Update activeAlerts from firebase notifications
+      if (alerts && alerts.length > 0) {
+        console.log('Received alerts from Firebase:', alerts);
+      }
     },
     playAlarmSequence
   );
 
   // Initialize audio on mount
   useEffect(() => {
-    return initializeAudio();
+    const cleanup = initializeAudio();
+    console.log('Audio initialized');
+    return cleanup;
   }, [initializeAudio]);
 
   // Schedule local notifications for medications
   useEffect(() => {
     if (localNotificationsEnabled) {
+      console.log('Scheduling local notifications for medications');
       scheduleMedicationNotifications(medications);
     }
   }, [localNotificationsEnabled, medications, scheduleMedicationNotifications]);
 
   // When a high priority alert is active, play the alarm
   useEffect(() => {
-    // Only play sounds for high priority alerts that are not warning alerts
+    // Find high priority alerts that need attention
     const highPriorityAlert = activeAlerts.find(a => 
       a.priority === 'high' && 
       !a.acknowledged && 
@@ -57,28 +64,35 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     
     if (highPriorityAlert) {
       if (isSoundEnabled) {
-        // Use the loud alarm sequence for high priority alerts at exact time
         console.log('Playing loud alarm for high priority alert:', highPriorityAlert.id);
         playLoudAlarmSequence();
-      }
-      
-      // Also send a local notification for this alert
-      if (localNotificationsEnabled) {
-        const [medicationId] = highPriorityAlert.id.split('-');
-        const medication = medications.find(med => med.id === medicationId);
         
-        if (medication) {
-          sendNotification(
-            highPriorityAlert.title,
-            highPriorityAlert.body,
-            medicationId,
-            'high'
-          );
+        // Also send a local notification for this alert
+        if (localNotificationsEnabled) {
+          const [medicationId] = highPriorityAlert.id.split('-');
+          const medication = medications.find(med => med.id === medicationId);
+          
+          if (medication) {
+            sendNotification(
+              highPriorityAlert.title,
+              highPriorityAlert.body,
+              medicationId,
+              'high'
+            );
+          }
         }
       }
     } else {
-      // No active sounds for medium priority (warning) alerts
-      // We'll just keep the visual notifications without sound
+      // Check for medium priority alerts
+      const mediumPriorityAlert = activeAlerts.find(a => 
+        a.priority === 'medium' && 
+        !a.acknowledged
+      );
+      
+      if (mediumPriorityAlert && isSoundEnabled) {
+        console.log('Playing standard alarm for medium priority alert:', mediumPriorityAlert.id);
+        playAlarmSequence();
+      }
     }
   }, [activeAlerts, isSoundEnabled, playAlarmSequence, playLoudAlarmSequence, localNotificationsEnabled, sendNotification, medications]);
 

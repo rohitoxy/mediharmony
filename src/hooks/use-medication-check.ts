@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Medication, MedicationAlert } from '@/types/medication';
 import { useToast } from '@/hooks/use-toast';
 
@@ -7,6 +7,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
   const [activeAlerts, setActiveAlerts] = useState<MedicationAlert[]>([]);
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clear stale alerts on medication change
   useEffect(() => {
@@ -33,7 +34,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
         
         const [hours, minutes] = medication.time.split(':').map(Number);
         
-        // Check if it's the exact time for medication
+        // Check if it's the exact time for medication (check within the minute)
         if (currentHours === hours && currentMinutes === minutes) {
           // Use just the medication ID as the base for the alert ID
           const medicationId = medication.id;
@@ -50,7 +51,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
               title: 'Medication Due',
               body: `${medication.medicineName} for patient in room ${medication.roomNumber}`,
               timestamp: Date.now(),
-              priority: 'high',
+              priority: medication.priority || 'high',
               acknowledged: false
             };
             
@@ -103,11 +104,22 @@ export const useMedicationCheck = (medications: Medication[]) => {
       });
     };
     
-    const interval = setInterval(checkMedications, 10000); // Check every 10 seconds for better efficiency
-    checkMedications(); // Check immediately on first load
+    // Check immediately on mount and medication changes
+    checkMedications();
+    
+    // Clear previous interval if it exists
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    // Set up a more frequent interval (every 5 seconds) for more accurate checks
+    intervalRef.current = setInterval(checkMedications, 5000);
     
     return () => {
-      clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, [medications, activeAlerts, toast]);
   
@@ -120,6 +132,10 @@ export const useMedicationCheck = (medications: Medication[]) => {
           : alert
       )
     );
+    
+    // Extract medication ID from alert ID
+    const [medicationId] = alertId.split('-');
+    return medicationId;
   }, []);
   
   const clearAlert = useCallback((alertId: string) => {

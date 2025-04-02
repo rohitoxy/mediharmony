@@ -2,6 +2,7 @@
 import { Volume2, VolumeX, Bell, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 
 interface NurseHeaderProps {
   currentTime: Date;
@@ -18,8 +19,20 @@ export const NurseHeader = ({
   highPriorityCount,
   setShowAlertsPanel
 }: NurseHeaderProps) => {
+  // Create a local state for more accurate time display
+  const [localTime, setLocalTime] = useState(new Date());
+  
+  // Update the time every second for more accuracy
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLocalTime(new Date());
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
   return (
@@ -45,7 +58,7 @@ export const NurseHeader = ({
         <div className="flex items-center space-x-2">
           <div className="bg-card px-3 py-1.5 rounded-md shadow-sm text-primary font-medium border border-border/30">
             <Clock className="inline-block h-4 w-4 mr-1.5 text-primary" />
-            {formatTime(currentTime)}
+            {formatTime(localTime)}
           </div>
           
           {highPriorityCount > 0 && (
