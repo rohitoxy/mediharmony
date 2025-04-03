@@ -1,4 +1,3 @@
-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Medication } from "@/types/medication";
@@ -28,6 +27,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     groupedAlerts,
     acknowledgeAlert,
     highPriorityCount,
+    medicationsByTime
   } = useMedicationAlarm(medications);
 
   // Find alerts to display
@@ -86,6 +86,26 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
 
   const handleReminderClose = (alertId: string) => {
     acknowledgeAlert(alertId);
+  };
+  
+  // Get medication grouping information for warning popups
+  const getGroupedMedicationsForWarning = (alert: { id: string }) => {
+    // Extract the medication and time information
+    const [medicationId] = alert.id.split('-');
+    const medication = medications.find(m => m.id === medicationId);
+    
+    if (!medication) return undefined;
+    
+    // Get all medications due at the same time
+    const timeGroup = medicationsByTime[medication.time];
+    if (timeGroup && timeGroup.count > 1) {
+      return {
+        count: timeGroup.count,
+        roomNumbers: timeGroup.roomNumbers,
+      };
+    }
+    
+    return undefined;
   };
 
   return (
@@ -157,6 +177,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
           <MedicationReminderPopup
             alert={warningAlert}
             onClose={handleReminderClose}
+            groupedMedications={getGroupedMedicationsForWarning(warningAlert)}
           />
         )}
       </AnimatePresence>

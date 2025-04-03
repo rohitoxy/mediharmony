@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlarmClock, CheckCircle2, Bell, AlertTriangle, Info } from 'lucide-react';
+import { AlarmClock, CheckCircle2, Bell, AlertTriangle, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MedicationAlert } from '@/types/medication';
 import { 
@@ -20,14 +20,20 @@ interface MedicationFullScreenAlertProps {
   alert: MedicationAlert;
   onAcknowledge: (alertId: string) => string;
   onComplete?: (medicationId: string) => void;
+  groupedMedications?: {
+    count: number;
+    roomNumbers: string[];
+  };
 }
 
 const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
   alert,
   onAcknowledge,
-  onComplete
+  onComplete,
+  groupedMedications
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [showAllRooms, setShowAllRooms] = useState(false);
   const { toast } = useToast();
   
   const handleConfirmAcknowledge = () => {
@@ -46,6 +52,9 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
     setIsConfirmOpen(false);
   };
   
+  // Determine if we have multiple patients for this alert
+  const hasMultipleMedications = groupedMedications && groupedMedications.count > 1;
+  
   // Determine styles based on priority
   const getPriorityStyles = () => {
     switch (alert.priority) {
@@ -58,7 +67,9 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-red-600 hover:bg-red-700',
           animationColor: 'rgba(234, 56, 76, 0.3)',
           icon: <AlertTriangle className="h-7 w-7 text-red-500 animate-pulse" />,
-          label: 'This medication is urgent and needs to be administered immediately!',
+          label: hasMultipleMedications 
+            ? `There are ${groupedMedications?.count} medications that need urgent attention!`
+            : 'This medication is urgent and needs to be administered immediately!',
           bgOpacity: 'bg-black/90'
         };
       case 'medium':
@@ -70,7 +81,9 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-amber-600 hover:bg-amber-700',
           animationColor: 'rgba(245, 158, 11, 0.3)',
           icon: <Bell className="h-7 w-7 text-amber-500 animate-pulse" />,
-          label: 'This medication needs to be administered soon!',
+          label: hasMultipleMedications 
+            ? `There are ${groupedMedications?.count} medications that need to be administered soon!`
+            : 'This medication needs to be administered soon!',
           bgOpacity: 'bg-black/80'
         };
       case 'low':
@@ -82,7 +95,9 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           buttonBg: 'bg-blue-500 hover:bg-blue-600',
           animationColor: 'rgba(59, 130, 246, 0.3)',
           icon: <Info className="h-7 w-7 text-blue-500 animate-pulse" />,
-          label: 'This medication is scheduled for administration.',
+          label: hasMultipleMedications 
+            ? `There are ${groupedMedications?.count} medications scheduled for administration.`
+            : 'This medication is scheduled for administration.',
           bgOpacity: 'bg-black/70'
         };
       default:
@@ -146,12 +161,58 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
             <div className="bg-white rounded-full p-2.5 shadow-md">
               {styles.icon}
             </div>
-            <h2 className="text-2xl font-bold text-white">{alert.title}</h2>
+            <h2 className="text-2xl font-bold text-white">
+              {hasMultipleMedications ? 'Multiple Medications Due' : alert.title}
+            </h2>
           </motion.div>
           
           <div className="p-6 space-y-6">
             <div className="text-center">
-              <p className="text-2xl font-bold">{alert.body}</p>
+              {hasMultipleMedications ? (
+                <>
+                  <p className="text-xl font-bold mb-3">
+                    {groupedMedications?.count} medications due now
+                  </p>
+                  <div className="flex items-center justify-center mt-2 mb-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowAllRooms(!showAllRooms)}
+                      className={`text-xs flex items-center gap-1 ${
+                        alert.priority === 'high' ? 'text-red-600 border-red-300' : 
+                        alert.priority === 'medium' ? 'text-amber-600 border-amber-300' : 
+                        'text-blue-600 border-blue-300'
+                      }`}
+                    >
+                      {showAllRooms ? "Hide Details" : "Show Details"}
+                      {showAllRooms ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </Button>
+                  </div>
+                  
+                  {showAllRooms && groupedMedications?.roomNumbers.length > 0 && (
+                    <div className="mt-3 space-y-1 p-3 bg-black/5 rounded-md">
+                      <p className="text-sm font-medium mb-2">Medications for rooms:</p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {groupedMedications.roomNumbers.map((room, index) => (
+                          <span 
+                            key={index}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-full ${
+                              alert.priority === 'high' ? 'bg-red-100 text-red-800' : 
+                              alert.priority === 'medium' ? 'bg-amber-100 text-amber-800' : 
+                              'bg-blue-100 text-blue-800'
+                            }`}
+                          >
+                            Room {room}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-2xl font-bold">{alert.body}</p>
+              )}
+              
               <p className={`mt-2 font-semibold ${
                 alert.priority === 'high' ? 'text-red-500' : 
                 alert.priority === 'medium' ? 'text-amber-500' : 'text-blue-500'
@@ -167,7 +228,9 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
                 onClick={() => setIsConfirmOpen(true)}
               >
                 <CheckCircle2 className="mr-2 h-5 w-5" />
-                Acknowledge & Mark as Given
+                {hasMultipleMedications 
+                  ? "Mark This Medication As Given" 
+                  : "Acknowledge & Mark as Given"}
               </Button>
             </div>
           </div>
@@ -179,7 +242,9 @@ const MedicationFullScreenAlert: React.FC<MedicationFullScreenAlertProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Administration</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to mark this medication as administered? This action confirms that you have given the medication to the patient.
+              {hasMultipleMedications 
+                ? "Are you sure you want to mark this medication as administered? There are multiple medications due right now." 
+                : "Are you sure you want to mark this medication as administered? This action confirms that you have given the medication to the patient."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

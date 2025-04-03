@@ -1,19 +1,27 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bell, X, Clock, Info } from 'lucide-react';
+import { Bell, X, Clock, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { MedicationAlert } from '@/types/medication';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface MedicationReminderPopupProps {
   alert: MedicationAlert;
   onClose: (alertId: string) => void;
+  groupedMedications?: {
+    count: number;
+    roomNumbers: string[];
+  };
 }
 
 const MedicationReminderPopup: React.FC<MedicationReminderPopupProps> = ({
   alert,
-  onClose
+  onClose,
+  groupedMedications
 }) => {
+  const [expanded, setExpanded] = useState(false);
+  
   // Get priority-specific styles
   const getPriorityStyles = () => {
     switch (alert.priority) {
@@ -49,6 +57,9 @@ const MedicationReminderPopup: React.FC<MedicationReminderPopupProps> = ({
   };
 
   const styles = getPriorityStyles();
+  
+  // Determine if we have multiple patients for this alert time
+  const hasMultipleMedications = groupedMedications && groupedMedications.count > 1;
 
   return (
     <motion.div
@@ -66,7 +77,11 @@ const MedicationReminderPopup: React.FC<MedicationReminderPopupProps> = ({
         
         <div className="flex-1">
           <div className="flex justify-between items-start">
-            <h3 className={`font-semibold ${styles.textColor}`}>{alert.title}</h3>
+            <h3 className={`font-semibold ${styles.textColor}`}>
+              {hasMultipleMedications 
+                ? `${groupedMedications.count} Medications Due Soon` 
+                : alert.title}
+            </h3>
             <Button
               variant="ghost"
               size="icon"
@@ -76,7 +91,40 @@ const MedicationReminderPopup: React.FC<MedicationReminderPopupProps> = ({
               <X className="h-3 w-3" />
             </Button>
           </div>
-          <p className="text-sm text-slate-600 mt-1">{alert.body}</p>
+          
+          {hasMultipleMedications ? (
+            <div className="text-sm text-slate-600 mt-1">
+              <div className="flex justify-between items-center">
+                <p>Multiple medications due in 1 minute</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-0 h-6 w-6"
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  {expanded ? (
+                    <ChevronUp className="h-4 w-4 text-slate-500" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-slate-500" />
+                  )}
+                </Button>
+              </div>
+              
+              {expanded && (
+                <div className="mt-2 space-y-1.5 pl-1 border-l-2 border-primary/30">
+                  {groupedMedications.roomNumbers.map((room, i) => (
+                    <p key={i} className="text-xs flex items-center gap-1.5">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
+                      Room {room}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600 mt-1">{alert.body}</p>
+          )}
+          
           <p className="text-xs text-slate-500 mt-2 italic">
             Due in 1 minute
           </p>

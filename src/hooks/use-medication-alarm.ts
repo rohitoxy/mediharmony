@@ -17,7 +17,13 @@ export const useMedicationAlarm = (medications: Medication[]) => {
   } = useAlarmSounds(isSoundEnabled);
   
   const medicationCheck = useMedicationCheck(medications);
-  const { activeAlerts, acknowledgeAlert, clearAlert, currentTime } = medicationCheck;
+  const { 
+    activeAlerts, 
+    acknowledgeAlert, 
+    clearAlert, 
+    currentTime,
+    medicationsByTime 
+  } = medicationCheck;
 
   // Initialize local notifications
   const {
@@ -160,6 +166,7 @@ export const useMedicationAlarm = (medications: Medication[]) => {
     notificationsEnabled: notificationsEnabled || localNotificationsEnabled,
     activeAlerts,
     groupedAlerts,
+    medicationsByTime,
     acknowledgeAlert: handleAcknowledgeAlert,
     highPriorityCount: groupedAlerts.high?.length || 0,
   };

@@ -8,6 +8,12 @@ export const useMedicationCheck = (medications: Medication[]) => {
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Track medications by time for grouping
+  const [medicationsByTime, setMedicationsByTime] = useState<Record<string, {
+    count: number;
+    roomNumbers: string[];
+    medicationIds: string[];
+  }>>({});
 
   // Clear stale alerts on medication change
   useEffect(() => {
@@ -29,6 +35,56 @@ export const useMedicationCheck = (medications: Medication[]) => {
       const currentHours = now.getHours();
       const currentMinutes = now.getMinutes();
       
+      // Group medications by time
+      const groupedByTime: Record<string, {
+        medications: Medication[];
+        count: number;
+        roomNumbers: string[];
+        medicationIds: string[];
+      }> = {};
+      
+      medications.forEach(medication => {
+        if (!medication.completed) {
+          const timeKey = medication.time;
+          if (!groupedByTime[timeKey]) {
+            groupedByTime[timeKey] = {
+              medications: [],
+              count: 0,
+              roomNumbers: [],
+              medicationIds: []
+            };
+          }
+          
+          groupedByTime[timeKey].medications.push(medication);
+          groupedByTime[timeKey].count++;
+          
+          if (!groupedByTime[timeKey].roomNumbers.includes(medication.roomNumber)) {
+            groupedByTime[timeKey].roomNumbers.push(medication.roomNumber);
+          }
+          
+          groupedByTime[timeKey].medicationIds.push(medication.id);
+        }
+      });
+      
+      // Update state with medication time groups (for UI display)
+      const timeGroups: Record<string, {
+        count: number;
+        roomNumbers: string[];
+        medicationIds: string[];
+      }> = {};
+      
+      Object.keys(groupedByTime).forEach(time => {
+        const group = groupedByTime[time];
+        timeGroups[time] = {
+          count: group.count,
+          roomNumbers: group.roomNumbers,
+          medicationIds: group.medicationIds
+        };
+      });
+      
+      setMedicationsByTime(timeGroups);
+      
+      // Check for medications due now
       medications.forEach(medication => {
         if (medication.completed) return;
         
@@ -80,12 +136,19 @@ export const useMedicationCheck = (medications: Medication[]) => {
             alert.id.startsWith(`${medicationId}-warning`)
           );
           
+          const timeKey = medication.time;
+          const hasMultipleAtSameTime = groupedByTime[timeKey]?.count > 1;
+          
           if (!warningAlertExists) {
             const alertId = `${medicationId}-warning-${now.toISOString()}`;
             const newAlert: MedicationAlert = {
               id: alertId,
-              title: 'Medication Due Soon',
-              body: `${medication.medicineName} for patient in room ${medication.roomNumber} due in 1 minute`,
+              title: hasMultipleAtSameTime 
+                ? `Multiple Medications Due Soon`
+                : 'Medication Due Soon',
+              body: hasMultipleAtSameTime
+                ? `${groupedByTime[timeKey].count} medications due in 1 minute`
+                : `${medication.medicineName} for patient in room ${medication.roomNumber} due in 1 minute`,
               timestamp: Date.now(),
               priority: 'medium',
               acknowledged: false
@@ -95,8 +158,10 @@ export const useMedicationCheck = (medications: Medication[]) => {
             setActiveAlerts(prev => [...prev, newAlert]);
             
             toast({
-              title: 'Medication Due Soon',
-              description: `${medication.medicineName} for patient in room ${medication.roomNumber} due in 1 minute`,
+              title: hasMultipleAtSameTime ? 'Multiple Medications Due Soon' : 'Medication Due Soon',
+              description: hasMultipleAtSameTime
+                ? `${groupedByTime[timeKey].count} medications due in 1 minute`
+                : `${medication.medicineName} for patient in room ${medication.roomNumber} due in 1 minute`,
               variant: 'default',
             });
           }
@@ -147,6 +212,7 @@ export const useMedicationCheck = (medications: Medication[]) => {
     activeAlerts,
     acknowledgeAlert,
     clearAlert,
-    currentTime
+    currentTime,
+    medicationsByTime
   };
 };
