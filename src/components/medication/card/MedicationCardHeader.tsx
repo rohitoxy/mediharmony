@@ -48,7 +48,7 @@ export const MedicationCardHeader = ({ time, priority, completed, timeStatus }: 
   const priorityBadge = getPriorityBadge(priority);
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex flex-wrap justify-between items-center gap-2">
       <Badge
         variant="outline"
         className={`${
