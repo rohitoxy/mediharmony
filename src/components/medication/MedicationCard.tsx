@@ -1,26 +1,18 @@
 
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  Clock, 
-  User, 
-  DoorClosed, 
-  Pill, 
-  Check, 
-  Trash2, 
-  ChevronDown, 
-  ChevronUp,
-  Calendar,
-  Utensils,
-  AlertCircle,
-  FileText,
-  AlertTriangle,
-  Info
-} from "lucide-react";
+import { Check } from "lucide-react";
 import { useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
+import { MedicationCardHeader } from "./card/MedicationCardHeader";
+import { MedicationCardContent } from "./card/MedicationCardContent";
+import { MedicationCardActions } from "./card/MedicationCardActions";
+import { MedicationDetails } from "./card/MedicationDetails";
+import { 
+  getMedicationColor,
+  getIconBackgroundColor, 
+  getPriorityBorderColor,
+  getStatusIndicatorColor
+} from "./card/style-utils";
 
 interface MedicationCardProps {
   medication: {
@@ -48,75 +40,22 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
   // Get priority or default to medium
   const priority = medication.priority || 'medium';
 
-  // Function to determine the color for the medication icon
-  const getMedicationColor = () => {
-    if (medication.completed) return "text-green-500";
-    if (isAlertActive) return "text-red-500";
-    if (timeStatus === "past") return "text-gray-400";
-    return "text-primary";
-  };
+  // Get styled colors
+  const medicationColor = getMedicationColor(
+    !!medication.completed, 
+    isAlertActive, 
+    timeStatus, 
+    priority
+  );
   
-  // Function to determine the priority badge styling
-  const getPriorityBadge = () => {
-    switch(priority) {
-      case 'high':
-        return {
-          bg: 'bg-red-100',
-          text: 'text-red-600',
-          icon: <AlertTriangle className="w-3 h-3 mr-1" />,
-          label: 'High'
-        };
-      case 'medium':
-        return {
-          bg: 'bg-amber-100',
-          text: 'text-amber-600',
-          icon: <Info className="w-3 h-3 mr-1" />,
-          label: 'Medium'
-        };
-      case 'low':
-        return {
-          bg: 'bg-green-100',
-          text: 'text-green-600',
-          icon: <Check className="w-3 h-3 mr-1" />,
-          label: 'Low'
-        };
-      default:
-        return {
-          bg: 'bg-gray-100',
-          text: 'text-gray-600',
-          icon: <Info className="w-3 h-3 mr-1" />,
-          label: 'Medium'
-        };
-    }
-  };
+  const iconBgColor = getIconBackgroundColor(
+    !!medication.completed,
+    isAlertActive,
+    priority
+  );
   
-  // Function to determine border color based on priority
-  const getPriorityBorderColor = () => {
-    if (medication.completed) return 'border-green-200';
-    
-    switch(priority) {
-      case 'high': return 'border-red-300';
-      case 'medium': return 'border-amber-200';
-      case 'low': return 'border-green-200';
-      default: return 'border-border/30';
-    }
-  };
-  
-  // Function to determine timing icon based on food timing
-  const renderFoodTimingIcon = () => {
-    switch(medication.foodTiming) {
-      case "before":
-        return <span className="text-orange-500">Before</span>;
-      case "with":
-        return <span className="text-green-500">With</span>;
-      case "after":
-        return <span className="text-blue-500">After</span>;
-      default:
-        return <span className="text-gray-500">{medication.foodTiming}</span>;
-    }
-  };
-
-  const priorityBadge = getPriorityBadge();
+  const borderColor = getPriorityBorderColor(!!medication.completed, priority);
+  const statusIndicatorColor = getStatusIndicatorColor(!!medication.completed, timeStatus, priority);
 
   return (
     <motion.div
@@ -126,156 +65,52 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
       whileHover={{ scale: 1.02 }}
     >
       <Card 
-        className={`relative shadow-md transition-all duration-300 bg-card overflow-hidden border ${getPriorityBorderColor()}
+        className={`relative shadow-md transition-all duration-300 bg-card overflow-hidden border ${borderColor}
           ${medication.completed ? 'bg-gray-50/50' : ''}
           ${isAlertActive ? 'shadow-lg ring-2 ring-red-500' : ''}
           ${isExpanded ? 'p-6' : 'p-4'}
         `}
       >
         {/* Status indicator strip */}
-        <div className={`absolute top-0 left-0 w-1 h-full 
-          ${medication.completed ? 'bg-green-500' : 
-            timeStatus === "upcoming" ? 'bg-red-500' : 
-            priority === 'high' ? 'bg-red-500' :
-            priority === 'medium' ? 'bg-amber-500' :
-            priority === 'low' ? 'bg-green-500' : 
-            'bg-gray-300'}`} 
-        />
+        <div className={`absolute top-0 left-0 w-1 h-full ${statusIndicatorColor}`} />
 
         {/* Top Actions */}
-        <div className="absolute top-2 right-2 flex gap-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`checkbox-${medication.id}`}
-              checked={medication.completed}
-              onCheckedChange={onComplete}
-              className={`h-4 w-4 border-2 ${isAlertActive ? 'animate-pulse' : ''}`}
-            />
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="h-6 w-6 hover:bg-red-100 hover:text-red-600 rounded-full"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
+        <MedicationCardActions 
+          id={medication.id}
+          completed={medication.completed}
+          isAlertActive={isAlertActive}
+          onComplete={onComplete}
+          onDelete={onDelete}
+        />
 
         {/* Card Content */}
-        <div 
-          className="space-y-3 mt-4 cursor-pointer"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className="flex justify-between items-center">
-            <Badge
-              variant="outline"
-              className={`${
-                medication.completed
-                  ? "bg-green-100 text-green-800"
-                  : timeStatus === "upcoming"
-                  ? "bg-red-500 text-white animate-pulse"
-                  : timeStatus === "past"
-                  ? "bg-muted"
-                  : "bg-primary text-primary-foreground"
-              } flex items-center`}
-            >
-              <Clock className="w-3 h-3 mr-1" />
-              {medication.time}
-            </Badge>
-            
-            {/* Priority Badge */}
-            <Badge
-              variant="outline"
-              className={`${priorityBadge.bg} ${priorityBadge.text} flex items-center`}
-            >
-              {priorityBadge.icon}
-              {priorityBadge.label}
-            </Badge>
-            
-            {isAlertActive && (
-              <div className="flex items-center text-red-500 animate-pulse">
-                <AlertCircle className="w-4 h-4 mr-1" />
-                <span className="text-xs font-medium">Due now</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center">
-            <div className={`p-1.5 rounded-full ${
-              medication.completed ? 'bg-green-100' : 
-              isAlertActive ? 'bg-red-100' : 
-              priority === 'high' ? 'bg-red-100' :
-              priority === 'medium' ? 'bg-amber-100' :
-              priority === 'low' ? 'bg-green-100' :
-              'bg-primary/10'
-            } mr-3`}>
-              <Pill className={`w-4 h-4 ${getMedicationColor()}`} />
-            </div>
-            <span className="text-sm font-medium truncate">{medication.medicineName}</span>
-          </div>
-
-          {!isExpanded ? (
-            <div className="flex items-center justify-between text-muted-foreground text-sm mt-2">
-              <div className="flex items-center">
-                <DoorClosed className="w-3 h-3 mr-1" />
-                <span>Room {medication.roomNumber}</span>
-              </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="space-y-4 mt-3">
-              {/* Patient & Room Info */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center text-foreground bg-background/50 p-2 rounded-md">
-                  <div className="bg-primary/10 p-1 rounded-full mr-2">
-                    <User className="w-3 h-3 text-primary" />
-                  </div>
-                  <span className="text-sm">ID: {medication.patientId}</span>
-                </div>
-                <div className="flex items-center text-foreground bg-background/50 p-2 rounded-md">
-                  <div className="bg-primary/10 p-1 rounded-full mr-2">
-                    <DoorClosed className="w-3 h-3 text-primary" />
-                  </div>
-                  <span className="text-sm">Room: {medication.roomNumber}</span>
-                </div>
-              </div>
-
-              {/* Medication Details */}
-              <div className="space-y-2 text-sm text-foreground bg-background/50 p-3 rounded-md">
-                <div className="flex items-center">
-                  <Pill className="w-3 h-3 mr-2 text-primary" />
-                  <p>Dosage: <span className="font-medium">{medication.dosage}</span></p>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="w-3 h-3 mr-2 text-primary" />
-                  <p>Duration: <span className="font-medium">{medication.durationDays} days</span></p>
-                </div>
-                <div className="flex items-center">
-                  <Utensils className="w-3 h-3 mr-2 text-primary" />
-                  <p>Timing: {renderFoodTimingIcon()} food</p>
-                </div>
-              </div>
-
-              {/* Notes Section */}
-              {medication.notes && (
-                <div className="bg-yellow-50 p-3 rounded-md border-l-2 border-yellow-300">
-                  <div className="flex items-start">
-                    <FileText className="w-3 h-3 mr-2 text-yellow-600 mt-0.5" />
-                    <p className="text-sm text-gray-600">{medication.notes}</p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex justify-center">
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </div>
-          )}
-        </div>
+        <MedicationCardHeader 
+          time={medication.time}
+          priority={priority}
+          completed={medication.completed}
+          timeStatus={timeStatus}
+        />
+        
+        <MedicationCardContent
+          medicineName={medication.medicineName}
+          roomNumber={medication.roomNumber}
+          patientId={medication.patientId}
+          medicationColor={medicationColor}
+          iconBgColor={iconBgColor}
+          isExpanded={isExpanded}
+          setIsExpanded={setIsExpanded}
+          medicationDetails={
+            isExpanded && (
+              <MedicationDetails
+                medicineName={medication.medicineName}
+                dosage={medication.dosage}
+                durationDays={medication.durationDays}
+                foodTiming={medication.foodTiming}
+                notes={medication.notes}
+              />
+            )
+          }
+        />
         
         {/* Status Pill */}
         {medication.completed && (
