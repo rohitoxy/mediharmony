@@ -9,13 +9,15 @@ interface MedicationListProps {
   getTimeStatus: (time: string) => "past" | "upcoming" | "future";
   onComplete: (medication: Medication) => void;
   onDelete: (medication: Medication) => void;
+  viewMode?: 'grid' | 'compact';
 }
 
 export const MedicationList = ({
   medications,
   getTimeStatus,
   onComplete,
-  onDelete
+  onDelete,
+  viewMode = 'grid'
 }: MedicationListProps) => {
   if (medications.length === 0) {
     return (
@@ -60,9 +62,14 @@ export const MedicationList = ({
     return a.time.localeCompare(b.time);
   });
 
+  // Determine grid classes based on view mode
+  const gridClasses = viewMode === 'grid' 
+    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4" 
+    : "grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2";
+
   return (
     <AnimatePresence>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className={gridClasses}>
         {sortedMedications.map((medication) => (
           <MedicationCard
             key={medication.id}
@@ -70,6 +77,7 @@ export const MedicationList = ({
             timeStatus={getTimeStatus(medication.time)}
             onComplete={() => onComplete(medication)}
             onDelete={() => onDelete(medication)}
+            compact={viewMode === 'compact'}
           />
         ))}
       </div>

@@ -10,6 +10,7 @@ import { NurseHeader } from "./nurse/NurseHeader";
 import { NurseStats } from "./nurse/NurseStats";
 import { MedicationFilter } from "./nurse/MedicationFilter";
 import { MedicationList } from "./nurse/MedicationList";
+import { ToggleView } from "./nurse/ToggleView";
 import MedicationFullScreenAlert from "./medication/MedicationFullScreenAlert";
 import MedicationReminderPopup from "./medication/MedicationReminderPopup";
 
@@ -18,6 +19,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showAlertsPanel, setShowAlertsPanel] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
   
   const { medications, handleComplete, handleDelete } = useMedications(initialMedications);
   const { 
@@ -30,8 +32,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     medicationsByTime
   } = useMedicationAlarm(medications);
 
-  // Find alerts to display
-  // Regular alerts (not warnings) for full screen display
   const activeHighPriorityAlert = groupedAlerts.high?.find(alert => 
     !alert.acknowledged && !alert.id.includes("-warning")
   );
@@ -42,13 +42,11 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     !alert.acknowledged && !alert.id.includes("-warning")
   );
   
-  // For warning alerts (one minute reminders), find the first unacknowledged warning
   const warningAlert = 
     (groupedAlerts.high?.find(alert => !alert.acknowledged && alert.id.includes("-warning"))) ||
     (groupedAlerts.medium?.find(alert => !alert.acknowledged && alert.id.includes("-warning"))) ||
     (groupedAlerts.low?.find(alert => !alert.acknowledged && alert.id.includes("-warning")));
   
-  // Get the highest priority active alert to show (only one at a time)
   const activeAlert = activeHighPriorityAlert || activeMediumPriorityAlert || activeLowPriorityAlert;
 
   const getTimeStatus = (medicationTime: string) => {
@@ -88,15 +86,12 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
     acknowledgeAlert(alertId);
   };
   
-  // Get medication grouping information for warning popups
   const getGroupedMedicationsForWarning = (alert: { id: string }) => {
-    // Extract the medication and time information
     const [medicationId] = alert.id.split('-');
     const medication = medications.find(m => m.id === medicationId);
     
     if (!medication) return undefined;
     
-    // Get all medications due at the same time
     const timeGroup = medicationsByTime[medication.time];
     if (timeGroup && timeGroup.count > 1) {
       return {
@@ -120,10 +115,16 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
       
       <NurseStats medications={medications} />
       
-      <MedicationFilter
-        filterStatus={filterStatus}
-        setFilterStatus={setFilterStatus}
-      />
+      <div className="flex items-center justify-between mb-4">
+        <MedicationFilter
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+        />
+        <ToggleView 
+          view={viewMode}
+          onViewChange={setViewMode}
+        />
+      </div>
       
       <MedicationList
         medications={filteredMedications}
@@ -133,6 +134,7 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
           setSelectedMedication(medication);
           setIsDeleteDialogOpen(true);
         }}
+        viewMode={viewMode}
       />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -161,7 +163,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Full Screen Alert for Regular Medication Alerts */}
       <AnimatePresence>
         {activeAlert && (
           <MedicationFullScreenAlert
@@ -171,7 +172,6 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         )}
       </AnimatePresence>
 
-      {/* Small Popup for One-Minute Warnings */}
       <AnimatePresence>
         {warningAlert && (
           <MedicationReminderPopup

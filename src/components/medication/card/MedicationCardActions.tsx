@@ -9,6 +9,7 @@ interface MedicationCardActionsProps {
   isAlertActive: boolean;
   onComplete: () => void;
   onDelete: () => void;
+  compact?: boolean;
 }
 
 export const MedicationCardActions = ({
@@ -16,8 +17,35 @@ export const MedicationCardActions = ({
   completed,
   isAlertActive,
   onComplete,
-  onDelete
+  onDelete,
+  compact = false
 }: MedicationCardActionsProps) => {
+  if (compact) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/20 transition-opacity rounded-md">
+        <div className="flex gap-1">
+          <Checkbox
+            id={`checkbox-${id}`}
+            checked={completed}
+            onCheckedChange={onComplete}
+            className={`h-4 w-4 border-2 bg-background ${isAlertActive ? 'animate-pulse' : ''}`}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="h-6 w-6 bg-white hover:bg-red-100 hover:text-red-600 rounded-full"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute top-2 right-2 flex gap-2">
       <div className="flex items-center space-x-2">

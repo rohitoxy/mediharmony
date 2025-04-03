@@ -31,9 +31,10 @@ interface MedicationCardProps {
   timeStatus: "past" | "upcoming" | "future";
   onComplete: () => void;
   onDelete: () => void;
+  compact?: boolean;
 }
 
-const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: MedicationCardProps) => {
+const MedicationCard = ({ medication, timeStatus, onComplete, onDelete, compact = false }: MedicationCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isAlertActive = timeStatus === "upcoming" && !medication.completed;
   
@@ -57,6 +58,55 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete }: Medica
   const borderColor = getPriorityBorderColor(!!medication.completed, priority);
   const statusIndicatorColor = getStatusIndicatorColor(!!medication.completed, timeStatus, priority);
 
+  if (compact) {
+    // Compact theater-style view
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        whileHover={{ scale: 1.05 }}
+      >
+        <div 
+          className={`relative shadow-sm overflow-hidden rounded-md cursor-pointer 
+            ${medication.completed ? 'bg-gray-100' : iconBgColor} 
+            ${isAlertActive ? 'ring-2 ring-red-500' : ''}
+            h-20 m-1
+          `}
+        >
+          {/* Status indicator strip */}
+          <div className={`absolute top-0 left-0 w-full h-1 ${statusIndicatorColor}`} />
+          
+          <MedicationCardActions 
+            id={medication.id}
+            completed={medication.completed}
+            isAlertActive={isAlertActive}
+            onComplete={onComplete}
+            onDelete={onDelete}
+            compact={true}
+          />
+
+          <div className="flex flex-col items-center justify-center p-2 h-full">
+            <div className="font-semibold text-xs text-center truncate w-full">
+              {medication.medicineName}
+            </div>
+            <div className="text-xs text-gray-600 mb-1">
+              {medication.time}
+            </div>
+            <div className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 border border-gray-200">
+              Room {medication.roomNumber}
+            </div>
+            
+            {medication.completed && (
+              <div className="absolute bottom-0 left-0 right-0 bg-green-500 h-1"></div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Regular card view
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
