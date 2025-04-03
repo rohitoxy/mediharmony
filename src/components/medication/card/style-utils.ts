@@ -8,7 +8,13 @@ export const getMedicationColor = (
   if (isCompleted) return "text-green-500";
   if (isAlertActive) return "text-red-500";
   if (timeStatus === "past") return "text-gray-400";
-  return "text-primary";
+  
+  switch(priority) {
+    case 'high': return "text-red-600";
+    case 'medium': return "text-amber-600";
+    case 'low': return "text-green-600";
+    default: return "text-primary";
+  }
 };
 
 export const getIconBackgroundColor = (

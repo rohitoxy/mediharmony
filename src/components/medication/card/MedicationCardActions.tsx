@@ -47,7 +47,7 @@ export const MedicationCardActions = ({
   }
 
   return (
-    <div className="absolute top-2 right-2 flex gap-2">
+    <div className="absolute top-2 right-2 flex gap-2 z-10">
       <div className="flex items-center space-x-2">
         <Checkbox
           id={`checkbox-${id}`}

@@ -73,13 +73,6 @@ export const MedicationCardHeader = ({ time, priority, completed, timeStatus }: 
         {priorityBadge.icon}
         {priorityBadge.label}
       </Badge>
-      
-      {isAlertActive && (
-        <div className="flex items-center text-red-500 animate-pulse">
-          <AlertCircle className="w-4 h-4 mr-1" />
-          <span className="text-xs font-medium">Due now</span>
-        </div>
-      )}
     </div>
   );
 };
