@@ -22,13 +22,13 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
   const fullScreenHighIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeAudio = useCallback(() => {
-    // Different sounds for different priority levels
-    lowPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3", false, 0.6);
+    // Updated sounds for different priority levels - especially improved low priority sound
+    lowPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/1216/1216-preview.mp3", false, 0.7); // More distinct sound
     mediumPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3", false, 0.7);
     highPriorityAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/1285/1285-preview.mp3", false, 0.8);
     
-    // Different sounds for full screen alerts by priority
-    fullScreenLowAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3", false, 0.7);
+    // Updated full screen alert sounds by priority
+    fullScreenLowAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2856/2856-preview.mp3", false, 0.8); // More engaging sound
     fullScreenMediumAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2867/2867-preview.mp3", false, 0.8);
     fullScreenHighAudioRef.current = createAudioPlayer("https://assets.mixkit.co/active_storage/sfx/2887/2887-preview.mp3", false, 1.0);
     
@@ -65,13 +65,15 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
     let intervalRef: React.MutableRefObject<NodeJS.Timeout | null>;
     let repeatInterval: number;
     let repeatCount: number;
+    let enhancedPlayback = false;
     
     switch (priority) {
       case 'low':
         audioRef = lowPriorityAudioRef;
         intervalRef = lowSoundIntervalRef;
-        repeatInterval = 8000; // Less frequent for low priority
-        repeatCount = 3; // Fewer repeats
+        repeatInterval = 6000; // Slightly more frequent than before
+        repeatCount = 4; // More repeats to make it more noticeable
+        enhancedPlayback = true; // Use enhanced playback for low priority
         break;
       case 'medium':
         audioRef = mediumPriorityAudioRef;
@@ -94,7 +96,7 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
     
     // Play the selected alert sound
     if (audioRef.current) {
-      createRepeatingSound(audioRef.current, repeatInterval, repeatCount, intervalRef);
+      createRepeatingSound(audioRef.current, repeatInterval, repeatCount, intervalRef, enhancedPlayback);
     }
   }, [isSoundEnabled]);
 
@@ -106,13 +108,15 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
     let intervalRef: React.MutableRefObject<NodeJS.Timeout | null>;
     let repeatInterval: number;
     let repeatCount: number;
+    let enhancedPlayback = false;
     
     switch (priority) {
       case 'low':
         audioRef = fullScreenLowAudioRef;
         intervalRef = fullScreenLowIntervalRef;
-        repeatInterval = 6000; // Less frequent for low priority
-        repeatCount = 5; // Fewer repeats
+        repeatInterval = 5000; // More frequent for better attention
+        repeatCount = 6; // More repeats for better attention
+        enhancedPlayback = true; // Use enhanced playback for low priority
         break;
       case 'medium':
         audioRef = fullScreenMediumAudioRef;
@@ -135,7 +139,7 @@ export const useAlarmSounds = (isSoundEnabled: boolean) => {
     
     // Play the selected full screen alert sound
     if (audioRef.current) {
-      createRepeatingSound(audioRef.current, repeatInterval, repeatCount, intervalRef);
+      createRepeatingSound(audioRef.current, repeatInterval, repeatCount, intervalRef, enhancedPlayback);
     }
   }, [isSoundEnabled]);
 
