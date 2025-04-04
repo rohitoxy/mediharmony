@@ -124,6 +124,14 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete, compact 
         {/* Status indicator strip */}
         <div className={`absolute top-0 left-0 w-1 h-full ${statusIndicatorColor}`} />
 
+        {/* Completed Status Pill - Moved back to original position */}
+        {medication.completed && (
+          <div className="absolute top-4 left-4 flex items-center text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+            <Check className="w-3 h-3 mr-1" />
+            Completed
+          </div>
+        )}
+
         {/* Top Actions - positioned in top-right corner */}
         <MedicationCardActions 
           id={medication.id}
@@ -135,14 +143,6 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete, compact 
 
         {/* Content - with proper spacing to avoid overlapping */}
         <div className="mt-2 pt-6">
-          {/* Status Pill - with enough top margin to avoid overlap */}
-          {medication.completed && (
-            <div className="absolute top-10 left-4 flex items-center text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
-              <Check className="w-3 h-3 mr-1" />
-              Completed
-            </div>
-          )}
-
           {/* Card Content - with proper spacing */}
           <MedicationCardHeader 
             time={medication.time}
