@@ -7,23 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { MedicineTypeSelector } from "@/components/medication/MedicineTypeSelector";
+import { DosageScheduleSelector } from "@/components/medication/DosageScheduleSelector";
 import { 
   ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X,
   AlertTriangle, Info, CheckCircle
 } from "lucide-react";
-
-interface Medication {
-  id: string;
-  patientId: string;
-  roomNumber: string;
-  medicineName: string;
-  dosage: string;
-  durationDays: number;
-  foodTiming: string;
-  time: string;
-  notes: string;
-  priority: 'high' | 'medium' | 'low';
-}
+import { Medication } from "@/types/medication";
 
 const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
   const { toast } = useToast();
@@ -37,8 +27,56 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     time: "10:00",
     notes: "",
     priority: "medium" as 'high' | 'medium' | 'low',
+    medicineType: "pill" as 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'drops',
+    frequency: "once",
+    specificTimes: [] as string[]
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  
+  useEffect(() => {
+    const baseTime = formData.time || "09:00";
+    const [hours, minutes] = baseTime.split(":").map(Number);
+    
+    let newSpecificTimes: string[] = [];
+    
+    switch(formData.frequency) {
+      case "once":
+        newSpecificTimes = [baseTime];
+        break;
+      case "twice":
+        newSpecificTimes = [
+          baseTime,
+          `${(hours + 12) % 24}:${minutes.toString().padStart(2, '0')}`
+        ];
+        break;
+      case "three":
+        newSpecificTimes = [
+          baseTime,
+          `${(hours + 8) % 24}:${minutes.toString().padStart(2, '0')}`,
+          `${(hours + 16) % 24}:${minutes.toString().padStart(2, '0')}`
+        ];
+        break;
+      case "four":
+        newSpecificTimes = [
+          baseTime,
+          `${(hours + 6) % 24}:${minutes.toString().padStart(2, '0')}`,
+          `${(hours + 12) % 24}:${minutes.toString().padStart(2, '0')}`,
+          `${(hours + 18) % 24}:${minutes.toString().padStart(2, '0')}`
+        ];
+        break;
+      case "custom":
+        return;
+      default:
+        newSpecificTimes = [baseTime];
+    }
+    
+    newSpecificTimes.sort();
+    
+    setFormData(prev => ({
+      ...prev,
+      specificTimes: newSpecificTimes
+    }));
+  }, [formData.frequency, formData.time]);
   
   const generateUniquePatientId = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -65,6 +103,9 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       time: formData.time,
       notes: formData.notes,
       priority: formData.priority,
+      medicineType: formData.medicineType,
+      frequency: formData.frequency,
+      specificTimes: formData.specificTimes
     };
     
     onMedicationAdd(medication);
@@ -86,6 +127,9 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         time: "10:00",
         notes: "",
         priority: "medium",
+        medicineType: "pill",
+        frequency: "once",
+        specificTimes: []
       });
       setFormSubmitted(false);
     }, 1000);
@@ -243,6 +287,14 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                   </div>
                 </div>
               </div>
+              
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Medicine Type</Label>
+                <MedicineTypeSelector 
+                  selectedType={formData.medicineType}
+                  onChange={(type) => setFormData({ ...formData, medicineType: type })}
+                />
+              </div>
 
               <div className="space-y-3">
                 <Label className="text-base font-medium">Priority</Label>
@@ -305,6 +357,16 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
               </div>
 
               <div className="space-y-2">
+                <Label className="text-base font-medium">Dosage Schedule</Label>
+                <DosageScheduleSelector 
+                  frequency={formData.frequency}
+                  specificTimes={formData.specificTimes}
+                  onFrequencyChange={(frequency) => setFormData({ ...formData, frequency })}
+                  onSpecificTimesChange={(specificTimes) => setFormData({ ...formData, specificTimes })}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label className="text-base font-medium">Notes (optional)</Label>
                 <div className="flex items-center">
                   <div className="w-full relative bg-gray-100 rounded-xl p-3">
@@ -343,7 +405,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
               </div>
 
               <div className="space-y-2">
-                <Label className="text-base font-medium">Notification</Label>
+                <Label className="text-base font-medium">Main Notification Time</Label>
                 <div className="flex justify-between">
                   <div className="bg-gray-100 rounded-xl p-3 flex items-center flex-grow">
                     <Bell className="h-5 w-5 mr-3 text-gray-500" />
@@ -356,14 +418,6 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
                       style={{ colorScheme: "light" }}
                     />
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="ml-3 bg-gray-100 rounded-xl h-12 w-12 flex items-center justify-center text-green-500"
-                  >
-                    <Plus className="h-6 w-6" />
-                  </Button>
                 </div>
               </div>
 

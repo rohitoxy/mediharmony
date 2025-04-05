@@ -70,6 +70,9 @@ const Index = () => {
           notes: med.notes || undefined,
           completed: med.completed || false,
           priority: (med.priority as 'high' | 'medium' | 'low') || 'medium',
+          medicineType: med.medicine_type as 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'drops' || 'pill',
+          frequency: med.frequency || 'once',
+          specificTimes: med.specific_times ? JSON.parse(med.specific_times) : [],
         }));
         setMedications(mappedMedications);
       }
@@ -84,7 +87,7 @@ const Index = () => {
         .from('medications')
         .insert([
           {
-            patient_id: medication.patientId, // This is now auto-generated
+            patient_id: medication.patientId,
             room_number: medication.roomNumber,
             medicine_name: medication.medicineName,
             dosage: medication.dosage,
@@ -93,6 +96,9 @@ const Index = () => {
             notification_time: medication.time,
             notes: medication.notes || null,
             priority: medication.priority || 'medium',
+            medicine_type: medication.medicineType || 'pill',
+            frequency: medication.frequency || 'once',
+            specific_times: medication.specificTimes ? JSON.stringify(medication.specificTimes) : null,
           }
         ])
         .select()

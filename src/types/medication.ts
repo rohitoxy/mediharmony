@@ -12,6 +12,9 @@ export interface Medication {
   notes?: string;
   completed?: boolean;
   priority?: 'high' | 'medium' | 'low';
+  medicineType?: 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'drops';
+  frequency?: string; // How many times per day
+  specificTimes?: string[]; // Specific times for multiple doses per day
 }
 
 export interface MedicationAlert {

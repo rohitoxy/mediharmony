@@ -10,6 +10,7 @@ interface MedicationCardContentProps {
   iconBgColor: string;
   isExpanded: boolean;
   setIsExpanded: (expanded: boolean) => void;
+  medicineTypeIcon?: React.ReactNode;
   medicationDetails: React.ReactNode;
 }
 
@@ -21,6 +22,7 @@ export const MedicationCardContent = ({
   iconBgColor,
   isExpanded,
   setIsExpanded,
+  medicineTypeIcon,
   medicationDetails
 }: MedicationCardContentProps) => {
   return (
@@ -30,7 +32,7 @@ export const MedicationCardContent = ({
     >
       <div className="flex items-center">
         <div className={`p-1.5 rounded-full ${iconBgColor} mr-3`}>
-          <Pill className={`w-4 h-4 ${medicationColor}`} />
+          {medicineTypeIcon || <Pill className={`w-4 h-4 ${medicationColor}`} />}
         </div>
         <span className="text-sm font-medium truncate">{medicineName}</span>
       </div>
