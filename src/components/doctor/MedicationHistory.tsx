@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, MedicationHistoryRow } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { 
   Table, 
@@ -70,6 +70,7 @@ const MedicationHistory = () => {
   const fetchMedicationHistory = async () => {
     try {
       setLoading(true);
+      // Using 'from' with a type cast to handle the new medication_history table
       const { data, error } = await supabase
         .from('medication_history')
         .select('*')
@@ -78,8 +79,10 @@ const MedicationHistory = () => {
       if (error) throw error;
 
       if (data) {
-        setHistory(data);
-        setFilteredHistory(data);
+        // Cast the data to the MedicationHistoryItem type
+        const typedData = data as unknown as MedicationHistoryItem[];
+        setHistory(typedData);
+        setFilteredHistory(typedData);
       }
     } catch (error) {
       console.error('Error fetching medication history:', error);

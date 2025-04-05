@@ -1,20 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, MedicationHistoryRow } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Medication } from "@/types/medication";
 
-export interface MedicationHistoryItem {
-  id: string;
-  medication_id: string;
-  patient_id: string;
-  medicine_name: string;
-  dosage: string;
-  scheduled_time: string;
-  taken_time: string | null;
-  status: 'scheduled' | 'taken' | 'missed';
-  notes: string | null;
-}
+export interface MedicationHistoryItem extends MedicationHistoryRow {}
 
 export const useMedicationHistory = () => {
   const [loading, setLoading] = useState(false);
@@ -36,16 +26,19 @@ export const useMedicationHistory = () => {
       
       if (checkError) throw checkError;
       
+      // Cast the data to our known type
+      const typedExistingRecords = existingRecords as unknown as MedicationHistoryRow[];
+      
       // If there's an existing scheduled record, update it
-      if (existingRecords && existingRecords.length > 0) {
-        const record = existingRecords[0];
+      if (typedExistingRecords && typedExistingRecords.length > 0) {
+        const record = typedExistingRecords[0];
         
         const { error: updateError } = await supabase
           .from('medication_history')
           .update({
             status: 'taken',
             taken_time: new Date().toISOString()
-          })
+          } as any)
           .eq('id', record.id);
         
         if (updateError) throw updateError;
@@ -71,7 +64,7 @@ export const useMedicationHistory = () => {
             taken_time: now,
             status: 'taken',
             notes: `Medication taken at ${new Date().toLocaleTimeString()}`
-          }]);
+          }] as any);
         
         if (insertError) throw insertError;
         
@@ -112,16 +105,19 @@ export const useMedicationHistory = () => {
       
       if (checkError) throw checkError;
       
+      // Cast the data to our known type
+      const typedExistingRecords = existingRecords as unknown as MedicationHistoryRow[];
+      
       // If there's an existing scheduled record, update it
-      if (existingRecords && existingRecords.length > 0) {
-        const record = existingRecords[0];
+      if (typedExistingRecords && typedExistingRecords.length > 0) {
+        const record = typedExistingRecords[0];
         
         const { error: updateError } = await supabase
           .from('medication_history')
           .update({
             status: 'missed',
             notes: `Medication missed at ${new Date().toLocaleTimeString()}`
-          })
+          } as any)
           .eq('id', record.id);
         
         if (updateError) throw updateError;
@@ -145,7 +141,7 @@ export const useMedicationHistory = () => {
             taken_time: null,
             status: 'missed',
             notes: `Medication missed at ${new Date().toLocaleTimeString()}`
-          }]);
+          }] as any);
         
         if (insertError) throw insertError;
         
@@ -206,7 +202,7 @@ export const useMedicationHistory = () => {
       if (scheduledDoses.length > 0) {
         const { error } = await supabase
           .from('medication_history')
-          .insert(scheduledDoses);
+          .insert(scheduledDoses as any);
         
         if (error) throw error;
         

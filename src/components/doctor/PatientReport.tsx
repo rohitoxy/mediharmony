@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, MedicationHistoryRow } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +55,7 @@ const PatientReport = () => {
     try {
       setLoading(true);
       
-      // Fetch medication history for this patient
+      // Fetch medication history for this patient using type assertion
       const { data: historyData, error: historyError } = await supabase
         .from('medication_history')
         .select('*')
@@ -63,7 +63,10 @@ const PatientReport = () => {
 
       if (historyError) throw historyError;
 
-      if (!historyData || historyData.length === 0) {
+      // Cast the data to our known type
+      const typedHistoryData = historyData as unknown as MedicationHistoryRow[];
+
+      if (!typedHistoryData || typedHistoryData.length === 0) {
         toast({
           title: "No Data",
           description: "No medication history found for this patient",
@@ -75,16 +78,16 @@ const PatientReport = () => {
       }
 
       // Calculate summary statistics
-      const totalMedications = historyData.length;
-      const takenCount = historyData.filter(item => item.status === 'taken').length;
-      const missedCount = historyData.filter(item => item.status === 'missed').length;
-      const scheduledCount = historyData.filter(item => item.status === 'scheduled').length;
+      const totalMedications = typedHistoryData.length;
+      const takenCount = typedHistoryData.filter(item => item.status === 'taken').length;
+      const missedCount = typedHistoryData.filter(item => item.status === 'missed').length;
+      const scheduledCount = typedHistoryData.filter(item => item.status === 'scheduled').length;
       const adherenceRate = totalMedications > 0 
         ? Math.round((takenCount / (takenCount + missedCount)) * 100) 
         : 0;
 
       // Group by medication name to get per-medication statistics
-      const medicationGroups = historyData.reduce((acc, item) => {
+      const medicationGroups = typedHistoryData.reduce((acc, item) => {
         if (!acc[item.medicine_name]) {
           acc[item.medicine_name] = {
             medicineName: item.medicine_name,
