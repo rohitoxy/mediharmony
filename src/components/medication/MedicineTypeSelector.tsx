@@ -5,7 +5,7 @@ import {
   Syringe, 
   Droplets, 
   Wind, 
-  Spray, 
+  Paintbrush, 
   Heart 
 } from 'lucide-react';
 
@@ -53,7 +53,7 @@ export const MedicineTypeSelector: React.FC<MedicineTypeSelectorProps> = ({
     },
     { 
       type: 'topical', 
-      icon: <Spray className="w-6 h-6" />, 
+      icon: <Paintbrush className="w-6 h-6" />, 
       label: 'Topical',
       color: 'text-amber-500' 
     },

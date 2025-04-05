@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { Check, Pill, Syringe, Droplets, Wind, Spray, Heart } from "lucide-react";
+import { Check, Pill, Syringe, Droplets, Wind, Paintbrush, Heart } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MedicationCardHeader } from "./card/MedicationCardHeader";
@@ -70,7 +70,7 @@ const MedicationCard = ({ medication, timeStatus, onComplete, onDelete, compact 
       case 'injection': return <Syringe className="w-4 h-4 text-red-500" />;
       case 'liquid': return <Droplets className="w-4 h-4 text-teal-500" />;
       case 'inhaler': return <Wind className="w-4 h-4 text-purple-500" />;
-      case 'topical': return <Spray className="w-4 h-4 text-amber-500" />;
+      case 'topical': return <Paintbrush className="w-4 h-4 text-amber-500" />;
       case 'drops': return <Heart className="w-4 h-4 text-pink-500" />;
       case 'pill':
       default: return <Pill className="w-4 h-4 text-blue-500" />;

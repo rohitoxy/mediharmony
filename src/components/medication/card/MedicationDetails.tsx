@@ -1,5 +1,5 @@
 
-import { Calendar, Utensils, FileText, Pill, Syringe, Droplets, Wind, Spray, Heart, Clock } from "lucide-react";
+import { Calendar, Utensils, FileText, Pill, Syringe, Droplets, Wind, Paintbrush, Heart, Clock } from "lucide-react";
 
 interface MedicationDetailsProps {
   medicineName: string;
@@ -48,7 +48,7 @@ export const MedicationDetails = ({
       case 'inhaler':
         return <Wind className="w-3 h-3 mr-2 text-purple-500" />;
       case 'topical':
-        return <Spray className="w-3 h-3 mr-2 text-amber-500" />;
+        return <Paintbrush className="w-3 h-3 mr-2 text-amber-500" />;
       case 'drops':
         return <Heart className="w-3 h-3 mr-2 text-pink-500" />;
       default:
