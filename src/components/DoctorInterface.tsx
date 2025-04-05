@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Medication } from "@/types/medication";
 import DoctorTabs from "@/components/doctor/DoctorTabs";
@@ -10,6 +10,7 @@ import { useMedicationHistory } from "@/hooks/use-medication-history";
 
 const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
   const [activeTab, setActiveTab] = useState("add-medication");
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
   const { scheduleMedicationDoses } = useMedicationHistory();
   const { toast } = useToast();
   
@@ -25,6 +26,8 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         title: "Success",
         description: "Medication doses scheduled successfully",
       });
+      // Trigger a refresh of the medication history tab
+      setHistoryRefreshTrigger(prev => prev + 1);
     }
   };
   
@@ -37,11 +40,11 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       )}
       
       {activeTab === "medication-history" && (
-        <MedicationHistory />
+        <MedicationHistory refreshTrigger={historyRefreshTrigger} />
       )}
       
       {activeTab === "patient-report" && (
-        <PatientReport />
+        <PatientReport refreshTrigger={historyRefreshTrigger} />
       )}
     </div>
   );

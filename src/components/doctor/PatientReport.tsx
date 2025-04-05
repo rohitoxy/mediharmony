@@ -35,12 +35,19 @@ type PatientMedicationSummary = {
   }[];
 };
 
-const PatientReport = () => {
+interface PatientReportProps {
+  refreshTrigger?: number;
+}
+
+const PatientReport = ({ refreshTrigger = 0 }: PatientReportProps) => {
   const [patientId, setPatientId] = useState("");
   const [reportData, setReportData] = useState<PatientMedicationSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [reportNotes, setReportNotes] = useState("");
   const { toast } = useToast();
+
+  // We don't need to react to refreshTrigger here because the user 
+  // explicitly generates reports by clicking a button
 
   const generatePatientReport = async () => {
     if (!patientId) {

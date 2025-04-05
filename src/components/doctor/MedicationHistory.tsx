@@ -38,7 +38,11 @@ type MedicationHistoryItem = {
   created_at: string;
 };
 
-const MedicationHistory = () => {
+interface MedicationHistoryProps {
+  refreshTrigger?: number;
+}
+
+const MedicationHistory = ({ refreshTrigger = 0 }: MedicationHistoryProps) => {
   const [history, setHistory] = useState<MedicationHistoryItem[]>([]);
   const [filteredHistory, setFilteredHistory] = useState<MedicationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +52,7 @@ const MedicationHistory = () => {
 
   useEffect(() => {
     fetchMedicationHistory();
-  }, []);
+  }, [refreshTrigger]);
 
   useEffect(() => {
     // Apply filters whenever filter values or history changes

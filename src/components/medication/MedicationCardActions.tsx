@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Check, X, ArrowRight } from "lucide-react";
 import { Medication } from "@/types/medication";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MedicationCardActionsProps {
   medication: Medication;
@@ -16,6 +18,7 @@ export function MedicationCardActions({
   onDelete 
 }: MedicationCardActionsProps) {
   const { recordMedicationTaken, recordMedicationMissed, loading } = useMedicationHistory();
+  const { toast } = useToast();
   
   const handleComplete = async () => {
     // Record this in the medication history
@@ -23,6 +26,22 @@ export function MedicationCardActions({
     
     // If successfully recorded in history, mark as complete in main medications table
     if (recorded) {
+      // Update the medications table to mark it as completed
+      const { error } = await supabase
+        .from('medications')
+        .update({ completed: true })
+        .eq('id', medication.id);
+      
+      if (error) {
+        console.error('Error updating medication completion status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to mark medication as complete",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       onComplete(medication);
     }
   };
