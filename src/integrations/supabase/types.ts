@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      medication_history: {
+        Row: {
+          created_at: string
+          dosage: string
+          id: string
+          medication_id: string
+          medicine_name: string
+          notes: string | null
+          patient_id: string
+          scheduled_time: string
+          status: string
+          taken_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          dosage: string
+          id?: string
+          medication_id: string
+          medicine_name: string
+          notes?: string | null
+          patient_id: string
+          scheduled_time: string
+          status?: string
+          taken_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          dosage?: string
+          id?: string
+          medication_id?: string
+          medicine_name?: string
+          notes?: string | null
+          patient_id?: string
+          scheduled_time?: string
+          status?: string
+          taken_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_history_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medications: {
         Row: {
           completed: boolean | null

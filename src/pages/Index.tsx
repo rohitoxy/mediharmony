@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -10,6 +9,7 @@ import LandingPage from "@/components/landing/LandingPage";
 import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
 import { Medication } from "@/types/medication";
+import { useMedicationHistory } from "@/hooks/use-medication-history";
 
 const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -17,6 +17,7 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { scheduleMedicationDoses } = useMedicationHistory();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -126,6 +127,9 @@ const Index = () => {
           specificTimes: data.specific_times ? JSON.parse(data.specific_times) : [],
         };
         setMedications([...medications, newMedication]);
+        
+        await scheduleMedicationDoses(newMedication);
+        
         toast({
           title: "Success",
           description: "Medication added successfully",
