@@ -47,6 +47,18 @@ export const useMedications = (initialMedications: Medication[]) => {
     try {
       console.log("Deleting medication with ID:", medication.id);
       
+      // First, delete any related records in the medication_history table
+      const { error: historyDeleteError } = await supabase
+        .from('medication_history')
+        .delete()
+        .eq('medication_id', medication.id);
+
+      if (historyDeleteError) {
+        console.error('Error deleting medication history records:', historyDeleteError);
+        throw historyDeleteError;
+      }
+      
+      // Now delete the medication itself
       const { error } = await supabase
         .from('medications')
         .delete()
