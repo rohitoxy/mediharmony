@@ -16,13 +16,16 @@ export type Database = {
           dosage: string
           duration_days: number
           food_timing: string
+          frequency: string | null
           id: string
           medicine_name: string
+          medicine_type: string | null
           notes: string | null
           notification_time: string
           patient_id: string
           priority: string | null
           room_number: string
+          specific_times: string | null
           user_id: string | null
         }
         Insert: {
@@ -31,13 +34,16 @@ export type Database = {
           dosage: string
           duration_days: number
           food_timing: string
+          frequency?: string | null
           id?: string
           medicine_name: string
+          medicine_type?: string | null
           notes?: string | null
           notification_time: string
           patient_id: string
           priority?: string | null
           room_number: string
+          specific_times?: string | null
           user_id?: string | null
         }
         Update: {
@@ -46,13 +52,16 @@ export type Database = {
           dosage?: string
           duration_days?: number
           food_timing?: string
+          frequency?: string | null
           id?: string
           medicine_name?: string
+          medicine_type?: string | null
           notes?: string | null
           notification_time?: string
           patient_id?: string
           priority?: string | null
           room_number?: string
+          specific_times?: string | null
           user_id?: string | null
         }
         Relationships: []
