@@ -98,7 +98,9 @@ const Index = () => {
             priority: medication.priority || 'medium',
             medicine_type: medication.medicineType || 'pill',
             frequency: medication.frequency || 'once',
-            specific_times: medication.specificTimes ? JSON.stringify(medication.specificTimes) : null,
+            specific_times: medication.specificTimes && medication.specificTimes.length > 0 
+              ? JSON.stringify(medication.specificTimes) 
+              : null,
           }
         ])
         .select()
@@ -108,9 +110,20 @@ const Index = () => {
 
       if (data) {
         const newMedication: Medication = {
-          ...medication,
           id: data.id,
-          completed: false,
+          patientId: data.patient_id,
+          medicineName: data.medicine_name,
+          roomNumber: data.room_number,
+          durationDays: data.duration_days,
+          foodTiming: data.food_timing,
+          time: data.notification_time,
+          dosage: data.dosage,
+          notes: data.notes || undefined,
+          completed: data.completed || false,
+          priority: (data.priority as 'high' | 'medium' | 'low') || 'medium',
+          medicineType: (data.medicine_type as 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'drops') || 'pill',
+          frequency: data.frequency || 'once',
+          specificTimes: data.specific_times ? JSON.parse(data.specific_times) : [],
         };
         setMedications([...medications, newMedication]);
         toast({
