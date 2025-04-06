@@ -43,49 +43,8 @@ export const useMedications = (initialMedications: Medication[]) => {
     }
   };
 
-  const handleDelete = async (medication: Medication) => {
-    try {
-      console.log("Deleting medication with ID:", medication.id);
-      
-      // First, delete any related records in the medication_history table
-      const { error: historyDeleteError } = await supabase
-        .from('medication_history')
-        .delete()
-        .eq('medication_id', medication.id);
-
-      if (historyDeleteError) {
-        console.error('Error deleting medication history records:', historyDeleteError);
-        throw historyDeleteError;
-      }
-      
-      // Now delete the medication itself
-      const { error } = await supabase
-        .from('medications')
-        .delete()
-        .eq('id', medication.id);
-
-      if (error) throw error;
-
-      // Update local state to remove the deleted medication
-      setMedications(meds => meds.filter(med => med.id !== medication.id));
-
-      toast({
-        title: "Success",
-        description: "Medication deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting medication:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete medication",
-        variant: "destructive",
-      });
-    }
-  };
-
   return {
     medications,
     handleComplete,
-    handleDelete,
   };
 };

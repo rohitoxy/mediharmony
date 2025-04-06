@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, X, ArrowRight } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Medication } from "@/types/medication";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
 import { useToast } from "@/hooks/use-toast";
@@ -8,13 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 interface MedicationCardActionsProps {
   medication: Medication;
   onComplete: (medication: Medication) => void;
-  onDelete: (medication: Medication) => void;
 }
 
 export function MedicationCardActions({ 
   medication, 
-  onComplete, 
-  onDelete 
+  onComplete
 }: MedicationCardActionsProps) {
   const { recordMedicationTaken, recordMedicationMissed, loading } = useMedicationHistory();
   const { toast } = useToast();
@@ -32,11 +30,6 @@ export function MedicationCardActions({
   const handleMissed = async () => {
     // Record this medication as missed with the current timestamp
     await recordMedicationMissed(medication);
-  };
-
-  const handleDelete = () => {
-    // Delete the medication
-    onDelete(medication);
   };
 
   return (
@@ -60,16 +53,6 @@ export function MedicationCardActions({
       >
         <Check className="h-4 w-4" />
         <span>Complete</span>
-      </Button>
-
-      <Button
-        variant="outline"
-        size="sm"
-        className="border-red-300 hover:bg-red-100 hover:text-red-700"
-        onClick={handleDelete}
-      >
-        <X className="h-4 w-4" />
-        <span>Delete</span>
       </Button>
     </div>
   );

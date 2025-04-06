@@ -7,7 +7,6 @@ interface MedicationListProps {
   medications: Medication[];
   getTimeStatus: (medicationTime: string) => "past" | "upcoming" | "future";
   onComplete: (medication: Medication) => void;
-  onDelete: (medication: Medication) => void;
   viewMode: 'grid' | 'compact';
 }
 
@@ -15,7 +14,6 @@ export function MedicationList({
   medications, 
   getTimeStatus,
   onComplete,
-  onDelete,
   viewMode 
 }: MedicationListProps) {
   // Sort medications by time
@@ -52,7 +50,6 @@ export function MedicationList({
             medication={medication}
             timeStatus={getTimeStatus(medication.time)}
             onComplete={() => onComplete(medication)}
-            onDelete={() => onDelete(medication)}
             compact={true}
           />
         ))}
@@ -68,7 +65,6 @@ export function MedicationList({
           medication={medication}
           timeStatus={getTimeStatus(medication.time)}
           onComplete={() => onComplete(medication)}
-          onDelete={() => onDelete(medication)}
         />
       ))}
     </div>

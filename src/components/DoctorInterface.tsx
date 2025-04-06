@@ -71,6 +71,44 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     }
   };
 
+  const handleMedicationDelete = async (medicationId: string) => {
+    try {
+      // First, delete any related records in the medication_history table
+      const { error: historyDeleteError } = await supabase
+        .from('medication_history')
+        .delete()
+        .eq('medication_id', medicationId);
+
+      if (historyDeleteError) {
+        console.error('Error deleting medication history records:', historyDeleteError);
+        throw historyDeleteError;
+      }
+      
+      // Now delete the medication itself
+      const { error } = await supabase
+        .from('medications')
+        .delete()
+        .eq('id', medicationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Medication deleted successfully",
+      });
+      
+      // Trigger a refresh of the medication history tab and patient list
+      setHistoryRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error('Error deleting medication:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete medication",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Set up an interval to refresh the medication history and patient report
   useEffect(() => {
     const refreshInterval = setInterval(() => {
@@ -94,7 +132,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       )}
       
       {activeTab === "medication-history" && (
-        <MedicationHistory refreshTrigger={historyRefreshTrigger} />
+        <MedicationHistory 
+          refreshTrigger={historyRefreshTrigger} 
+          onMedicationDelete={handleMedicationDelete}
+        />
       )}
       
       {activeTab === "patient-report" && (

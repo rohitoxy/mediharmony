@@ -20,7 +20,8 @@ import {
   Download, 
   AlertCircle, 
   CheckCircle, 
-  Clock 
+  Clock,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -40,14 +41,16 @@ type MedicationHistoryItem = {
 
 interface MedicationHistoryProps {
   refreshTrigger?: number;
+  onMedicationDelete?: (medicationId: string) => void;
 }
 
-const MedicationHistory = ({ refreshTrigger = 0 }: MedicationHistoryProps) => {
+const MedicationHistory = ({ refreshTrigger = 0, onMedicationDelete }: MedicationHistoryProps) => {
   const [history, setHistory] = useState<MedicationHistoryItem[]>([]);
   const [filteredHistory, setFilteredHistory] = useState<MedicationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [patientFilter, setPatientFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [medicationIds, setMedicationIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,6 +72,11 @@ const MedicationHistory = ({ refreshTrigger = 0 }: MedicationHistoryProps) => {
     }
 
     setFilteredHistory(filtered);
+    
+    // Update the set of unique medication IDs
+    const uniqueIds = new Set<string>();
+    filtered.forEach(item => uniqueIds.add(item.medication_id));
+    setMedicationIds(uniqueIds);
   }, [patientFilter, statusFilter, history]);
 
   const fetchMedicationHistory = async () => {
@@ -87,6 +95,11 @@ const MedicationHistory = ({ refreshTrigger = 0 }: MedicationHistoryProps) => {
         const typedData = data as unknown as MedicationHistoryItem[];
         setHistory(typedData);
         setFilteredHistory(typedData);
+        
+        // Update the set of unique medication IDs
+        const uniqueIds = new Set<string>();
+        typedData.forEach(item => uniqueIds.add(item.medication_id));
+        setMedicationIds(uniqueIds);
       }
     } catch (error) {
       console.error('Error fetching medication history:', error);
@@ -194,38 +207,86 @@ const MedicationHistory = ({ refreshTrigger = 0 }: MedicationHistoryProps) => {
           No medication history found matching your criteria.
         </div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Patient ID</TableHead>
-              <TableHead>Medicine</TableHead>
-              <TableHead>Dosage</TableHead>
-              <TableHead>Scheduled Time</TableHead>
-              <TableHead>Taken Time</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Notes</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredHistory.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.patient_id}</TableCell>
-                <TableCell>{item.medicine_name}</TableCell>
-                <TableCell>{item.dosage}</TableCell>
-                <TableCell>{format(new Date(item.scheduled_time), 'MMM d, yyyy h:mm a')}</TableCell>
-                <TableCell>
-                  {item.taken_time 
-                    ? format(new Date(item.taken_time), 'MMM d, yyyy h:mm:ss a') 
-                    : '—'}
-                </TableCell>
-                <TableCell>
-                  {getStatusBadge(item.status)}
-                </TableCell>
-                <TableCell>{item.notes || '—'}</TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Patient ID</TableHead>
+                <TableHead>Medicine</TableHead>
+                <TableHead>Dosage</TableHead>
+                <TableHead>Scheduled Time</TableHead>
+                <TableHead>Taken Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Notes</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredHistory.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.patient_id}</TableCell>
+                  <TableCell>{item.medicine_name}</TableCell>
+                  <TableCell>{item.dosage}</TableCell>
+                  <TableCell>{format(new Date(item.scheduled_time), 'MMM d, yyyy h:mm a')}</TableCell>
+                  <TableCell>
+                    {item.taken_time 
+                      ? format(new Date(item.taken_time), 'MMM d, yyyy h:mm:ss a') 
+                      : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(item.status)}
+                  </TableCell>
+                  <TableCell>{item.notes || '—'}</TableCell>
+                  <TableCell>
+                    {onMedicationDelete && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onMedicationDelete(item.medication_id)}
+                        className="h-8 w-8 hover:bg-red-100 hover:text-red-600 rounded-full"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+      
+      {medicationIds.size > 0 && onMedicationDelete && (
+        <div className="mt-6 border-t pt-4">
+          <h3 className="text-lg font-semibold mb-3">Medication Management</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Array.from(medicationIds).map(medicationId => {
+              const item = history.find(h => h.medication_id === medicationId);
+              if (!item) return null;
+              
+              return (
+                <Card key={medicationId} className="p-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{item.medicine_name}</h4>
+                      <p className="text-sm text-gray-600">Patient: {item.patient_id}</p>
+                      <p className="text-sm text-gray-600">Dosage: {item.dosage}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onMedicationDelete(medicationId)}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
       )}
     </Card>
   );
