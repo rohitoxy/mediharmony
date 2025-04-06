@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -16,8 +17,18 @@ const Index = () => {
   const [selectedInterface, setSelectedInterface] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
   const { scheduleMedicationDoses } = useMedicationHistory();
+
+  // Auto-refresh medications every minute to ensure multi-day medications appear
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,21 +56,39 @@ const Index = () => {
 
   useEffect(() => {
     const fetchMedications = async () => {
-      if (!session) return;
-
-      const { data, error } = await supabase
-        .from('medications')
-        .select('*');
-
-      if (error) {
-        console.error('Error fetching medications:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch medications",
-          variant: "destructive",
+      // Always fetch scheduled medications for today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      try {
+        // First, fetch all scheduled doses for today from medication_history
+        const { data: scheduledDoses, error: dosesError } = await supabase
+          .from('medication_history')
+          .select('*')
+          .eq('status', 'scheduled')
+          .gte('scheduled_time', today.toISOString())
+          .lt('scheduled_time', tomorrow.toISOString())
+          .order('scheduled_time', { ascending: true });
+          
+        if (dosesError) throw dosesError;
+        
+        // Then fetch all medications
+        const { data: medicationsData, error: medicationsError } = await supabase
+          .from('medications')
+          .select('*');
+          
+        if (medicationsError) throw medicationsError;
+        
+        // Create a map of medication_id to determine which ones need to be shown today
+        const activeMedicationIds = new Set();
+        scheduledDoses?.forEach(dose => {
+          activeMedicationIds.add(dose.medication_id);
         });
-      } else if (data) {
-        const mappedMedications: Medication[] = data.map(med => ({
+        
+        // Map all medications, but mark only those with scheduled doses for today as not completed
+        const mappedMedications: Medication[] = medicationsData.map(med => ({
           id: med.id,
           patientId: med.patient_id,
           medicineName: med.medicine_name,
@@ -69,18 +98,28 @@ const Index = () => {
           time: med.notification_time,
           dosage: med.dosage,
           notes: med.notes || undefined,
-          completed: med.completed || false,
+          completed: activeMedicationIds.has(med.id) ? false : (med.completed || false),
           priority: (med.priority as 'high' | 'medium' | 'low') || 'medium',
           medicineType: med.medicine_type as 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'drops' || 'pill',
           frequency: med.frequency || 'once',
           specificTimes: med.specific_times ? JSON.parse(med.specific_times) : [],
         }));
+        
         setMedications(mappedMedications);
+      } catch (error) {
+        console.error('Error fetching medications:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch medications",
+          variant: "destructive",
+        });
       }
     };
 
-    fetchMedications();
-  }, [session, toast]);
+    if (selectedInterface) {
+      fetchMedications();
+    }
+  }, [session, toast, selectedInterface, refreshTrigger]);
 
   const handleMedicationAdd = async (medication: Medication) => {
     try {

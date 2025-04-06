@@ -7,12 +7,52 @@ import MedicationForm from "@/components/doctor/MedicationForm";
 import MedicationHistory from "@/components/doctor/MedicationHistory";
 import PatientReport from "@/components/doctor/PatientReport";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Patient {
+  id: string;
+  name: string;
+  roomNumber: string;
+}
 
 const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
   const [activeTab, setActiveTab] = useState("add-medication");
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
+  const [existingPatients, setExistingPatients] = useState<Patient[]>([]);
   const { scheduleMedicationDoses } = useMedicationHistory();
   const { toast } = useToast();
+  
+  // Load existing patients from medications
+  useEffect(() => {
+    const fetchExistingPatients = async () => {
+      const { data, error } = await supabase
+        .from('medications')
+        .select('patient_id, medicine_name, room_number')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching existing patients:', error);
+        return;
+      }
+      
+      // Create a map to deduplicate patients by ID
+      const patientMap = new Map<string, Patient>();
+      
+      data?.forEach(med => {
+        if (!patientMap.has(med.patient_id)) {
+          patientMap.set(med.patient_id, {
+            id: med.patient_id,
+            name: med.medicine_name.split(' ')[0], // Using first part of medicine name as placeholder
+            roomNumber: med.room_number
+          });
+        }
+      });
+      
+      setExistingPatients(Array.from(patientMap.values()));
+    };
+    
+    fetchExistingPatients();
+  }, [historyRefreshTrigger]);
   
   const handleMedicationAdd = async (medication: Medication) => {
     // Add medication to the main application state
@@ -26,7 +66,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         title: "Success",
         description: "Medication doses scheduled successfully",
       });
-      // Trigger a refresh of the medication history tab
+      // Trigger a refresh of the medication history tab and patient list
       setHistoryRefreshTrigger(prev => prev + 1);
     }
   };
@@ -47,7 +87,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       <DoctorTabs activeTab={activeTab} onTabChange={setActiveTab} />
       
       {activeTab === "add-medication" && (
-        <MedicationForm onMedicationAdd={handleMedicationAdd} />
+        <MedicationForm 
+          onMedicationAdd={handleMedicationAdd} 
+          existingPatients={existingPatients}
+        />
       )}
       
       {activeTab === "medication-history" && (

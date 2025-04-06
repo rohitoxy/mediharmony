@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -8,16 +7,36 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { MedicineTypeSelector } from "@/components/medication/MedicineTypeSelector";
 import { DosageScheduleSelector } from "@/components/medication/DosageScheduleSelector";
 import { 
   ArrowLeft, Bell, Calendar, Pill, User, MapPin, Plus, X,
-  AlertTriangle, Info, CheckCircle
+  AlertTriangle, Info, CheckCircle, UsersRound
 } from "lucide-react";
 import { Medication } from "@/types/medication";
 
-const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Medication) => void }) => {
+interface Patient {
+  id: string;
+  name: string;
+  roomNumber: string;
+}
+
+interface MedicationFormProps {
+  onMedicationAdd: (medication: Medication) => void;
+  existingPatients: Patient[];
+}
+
+const MedicationForm = ({ onMedicationAdd, existingPatients }: MedicationFormProps) => {
   const { toast } = useToast();
+  const [patientMode, setPatientMode] = useState<'new' | 'existing'>('new');
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [formData, setFormData] = useState({
     patientName: "",
     roomNumber: "",
@@ -33,6 +52,19 @@ const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Med
     specificTimes: [] as string[]
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  
+  useEffect(() => {
+    if (patientMode === 'existing' && selectedPatientId) {
+      const patient = existingPatients.find(p => p.id === selectedPatientId);
+      if (patient) {
+        setFormData(prev => ({
+          ...prev,
+          patientName: patient.name,
+          roomNumber: patient.roomNumber
+        }));
+      }
+    }
+  }, [selectedPatientId, existingPatients, patientMode]);
   
   useEffect(() => {
     const baseTime = formData.time || "09:00";
@@ -91,7 +123,9 @@ const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Med
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const patientId = generateUniquePatientId();
+    const patientId = patientMode === 'existing' && selectedPatientId 
+      ? selectedPatientId 
+      : generateUniquePatientId();
     
     const medication: Medication = {
       id: Date.now().toString(),
@@ -133,6 +167,9 @@ const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Med
         specificTimes: []
       });
       setFormSubmitted(false);
+      setSelectedPatientId('');
+      
+      setPatientMode('new');
     }, 1000);
   };
 
@@ -221,6 +258,58 @@ const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Med
             className="p-6 space-y-6"
           >
             <div className="space-y-2">
+              <Label className="text-base font-medium">Patient Selection</Label>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <Button
+                  type="button"
+                  className={`flex items-center justify-center p-4 ${
+                    patientMode === 'new' 
+                      ? 'bg-primary text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  onClick={() => setPatientMode('new')}
+                >
+                  <Plus className="mr-2 h-5 w-5" />
+                  New Patient
+                </Button>
+                <Button
+                  type="button"
+                  className={`flex items-center justify-center p-4 ${
+                    patientMode === 'existing' 
+                      ? 'bg-primary text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  onClick={() => setPatientMode('existing')}
+                  disabled={existingPatients.length === 0}
+                >
+                  <UsersRound className="mr-2 h-5 w-5" />
+                  Existing Patient
+                </Button>
+              </div>
+              
+              {patientMode === 'existing' && (
+                <div className="mb-4">
+                  <Label htmlFor="existingPatient">Select Patient</Label>
+                  <Select 
+                    value={selectedPatientId}
+                    onValueChange={setSelectedPatientId}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a patient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {existingPatients.map(patient => (
+                        <SelectItem key={patient.id} value={patient.id}>
+                          Room {patient.roomNumber} - Patient ID: {patient.id}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label className="text-base font-medium">Patient details</Label>
               <div className="flex gap-3">
                 <div className="w-full relative bg-gray-100 rounded-xl p-3 flex items-center">
@@ -231,6 +320,7 @@ const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Med
                     required
                     className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
                     placeholder="Patient Name"
+                    disabled={patientMode === 'existing' && !!selectedPatientId}
                   />
                 </div>
               </div>
@@ -243,6 +333,7 @@ const MedicationForm = ({ onMedicationAdd }: { onMedicationAdd: (medication: Med
                     required
                     className="border-none bg-transparent focus:ring-0 p-0 w-full h-auto text-base"
                     placeholder="Room Number"
+                    disabled={patientMode === 'existing' && !!selectedPatientId}
                   />
                 </div>
               </div>
