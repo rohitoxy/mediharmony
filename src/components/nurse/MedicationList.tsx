@@ -36,6 +36,13 @@ export function MedicationList({
     return timeA[1] - timeB[1];
   });
 
+  // Since we've removed delete functionality from nurse interface, 
+  // provide a no-op function for the onDelete prop
+  const handleDelete = () => {
+    // This is intentionally empty as nurses shouldn't be able to delete medications
+    console.log("Delete functionality is disabled for nurses");
+  };
+
   if (viewMode === 'compact') {
     return (
       <motion.div 
@@ -50,6 +57,7 @@ export function MedicationList({
             medication={medication}
             timeStatus={getTimeStatus(medication.time)}
             onComplete={() => onComplete(medication)}
+            onDelete={handleDelete}
             compact={true}
           />
         ))}
@@ -65,6 +73,7 @@ export function MedicationList({
           medication={medication}
           timeStatus={getTimeStatus(medication.time)}
           onComplete={() => onComplete(medication)}
+          onDelete={handleDelete}
         />
       ))}
     </div>
