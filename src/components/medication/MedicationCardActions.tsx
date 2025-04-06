@@ -20,7 +20,7 @@ export function MedicationCardActions({
   const { toast } = useToast();
   
   const handleComplete = async () => {
-    // Record this in the medication history
+    // Record this in the medication history with the exact current time
     const recorded = await recordMedicationTaken(medication);
     
     // If successfully recorded in history, mark as complete in main medications table
@@ -30,7 +30,7 @@ export function MedicationCardActions({
   };
   
   const handleMissed = async () => {
-    // Record this medication as missed
+    // Record this medication as missed with the current timestamp
     await recordMedicationMissed(medication);
   };
 

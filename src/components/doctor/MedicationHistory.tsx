@@ -215,7 +215,7 @@ const MedicationHistory = ({ refreshTrigger = 0 }: MedicationHistoryProps) => {
                 <TableCell>{format(new Date(item.scheduled_time), 'MMM d, yyyy h:mm a')}</TableCell>
                 <TableCell>
                   {item.taken_time 
-                    ? format(new Date(item.taken_time), 'MMM d, yyyy h:mm a') 
+                    ? format(new Date(item.taken_time), 'MMM d, yyyy h:mm:ss a') 
                     : '—'}
                 </TableCell>
                 <TableCell>

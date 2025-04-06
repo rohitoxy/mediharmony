@@ -15,6 +15,9 @@ export const useMedicationHistory = () => {
     try {
       setLoading(true);
       
+      // Store the exact current time when the medication is acknowledged
+      const currentTime = new Date().toISOString();
+      
       // First check if there's already a record for this medication and time
       const { data: existingRecords, error: checkError } = await supabase
         .from('medication_history')
@@ -37,7 +40,7 @@ export const useMedicationHistory = () => {
           .from('medication_history')
           .update({
             status: 'taken',
-            taken_time: new Date().toISOString()
+            taken_time: currentTime
           } as any)
           .eq('id', record.id);
         
@@ -51,8 +54,6 @@ export const useMedicationHistory = () => {
         return true;
       } else {
         // Create a new record
-        const now = new Date().toISOString();
-        
         const { error: insertError } = await supabase
           .from('medication_history')
           .insert([{
@@ -60,8 +61,8 @@ export const useMedicationHistory = () => {
             patient_id: medication.patientId,
             medicine_name: medication.medicineName,
             dosage: medication.dosage,
-            scheduled_time: now,
-            taken_time: now,
+            scheduled_time: currentTime,
+            taken_time: currentTime,
             status: 'taken',
             notes: `Medication taken at ${new Date().toLocaleTimeString()}`
           }] as any);

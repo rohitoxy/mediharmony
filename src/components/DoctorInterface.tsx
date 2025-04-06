@@ -37,7 +37,7 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       if (activeTab === "medication-history" || activeTab === "patient-report") {
         setHistoryRefreshTrigger(prev => prev + 1);
       }
-    }, 30000); // Refresh every 30 seconds if on relevant tabs
+    }, 15000); // Refresh every 15 seconds if on relevant tabs (increased frequency for better sync)
 
     return () => clearInterval(refreshInterval);
   }, [activeTab]);
