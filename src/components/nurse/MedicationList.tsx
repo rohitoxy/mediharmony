@@ -58,6 +58,7 @@ export function MedicationList({
             timeStatus={getTimeStatus(medication.time)}
             onComplete={() => onComplete(medication)}
             onDelete={handleDelete}
+            showDeleteButton={false}
             compact={true}
           />
         ))}
@@ -74,6 +75,7 @@ export function MedicationList({
           timeStatus={getTimeStatus(medication.time)}
           onComplete={() => onComplete(medication)}
           onDelete={handleDelete}
+          showDeleteButton={false}
         />
       ))}
     </div>

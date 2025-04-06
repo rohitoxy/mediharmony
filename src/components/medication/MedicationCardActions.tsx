@@ -8,11 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 interface MedicationCardActionsProps {
   medication: Medication;
   onComplete: (medication: Medication) => void;
+  showDeleteButton?: boolean;
 }
 
 export function MedicationCardActions({ 
   medication, 
-  onComplete
+  onComplete,
+  showDeleteButton = true
 }: MedicationCardActionsProps) {
   const { recordMedicationTaken, recordMedicationMissed, loading } = useMedicationHistory();
   const { toast } = useToast();

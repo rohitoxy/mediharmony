@@ -11,6 +11,7 @@ import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
 import { Medication } from "@/types/medication";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
+import { PatientStatistics } from "@/components/landing/PatientStatistics";
 
 const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -224,7 +225,14 @@ const Index = () => {
   }
 
   if (!selectedInterface) {
-    return <LandingPage onInterfaceSelect={setSelectedInterface} />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10">
+        <div className="container py-8">
+          <LandingPage onInterfaceSelect={setSelectedInterface} />
+          <PatientStatistics />
+        </div>
+      </div>
+    );
   }
 
   if (selectedInterface === "doctor" && !session) {
