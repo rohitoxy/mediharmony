@@ -84,8 +84,8 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         throw historyDeleteError;
       }
       
-      // Then wait a moment to ensure the deletion has been processed
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Wait for the history deletion to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Now delete the medication itself
       const { error } = await supabase
@@ -93,7 +93,10 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
         .delete()
         .eq('id', medicationId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting medication:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",

@@ -20,7 +20,7 @@ export const MedicationCardActions = ({
   onComplete,
   onDelete,
   compact = false,
-  showDeleteButton = true
+  showDeleteButton = false
 }: MedicationCardActionsProps) => {
   if (compact) {
     return (

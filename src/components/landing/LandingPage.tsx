@@ -19,7 +19,7 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
         className="text-center mb-8"
       >
         <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          MediTrack Pro
+          Med Alert
         </h1>
         <p className="text-muted-foreground mt-2 text-lg max-w-md mx-auto">
           Streamlined medication management for healthcare professionals
