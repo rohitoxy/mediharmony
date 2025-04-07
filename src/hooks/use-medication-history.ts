@@ -36,15 +36,20 @@ export const useMedicationHistory = () => {
       if (typedExistingRecords && typedExistingRecords.length > 0) {
         const record = typedExistingRecords[0];
         
+        console.log("Updating existing record:", record.id);
+        
         const { error: updateError } = await supabase
           .from('medication_history')
           .update({
             status: 'taken',
             taken_time: currentTime
-          } as any)
+          })
           .eq('id', record.id);
         
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating medication history:", updateError);
+          throw updateError;
+        }
         
         // Also update the medication's completed status in the medications table
         const { error: updateMedicationError } = await supabase
@@ -56,6 +61,7 @@ export const useMedicationHistory = () => {
           
         if (updateMedicationError) {
           console.error('Error updating medication status:', updateMedicationError);
+          throw updateMedicationError;
         }
         
         toast({
@@ -77,9 +83,12 @@ export const useMedicationHistory = () => {
             taken_time: currentTime,
             status: 'taken',
             notes: `Medication taken at ${new Date().toLocaleTimeString()}`
-          }] as any);
+          }]);
         
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error inserting medication history:", insertError);
+          throw insertError;
+        }
         
         // Also update the medication's completed status in the medications table
         const { error: updateMedicationError } = await supabase
@@ -91,6 +100,7 @@ export const useMedicationHistory = () => {
           
         if (updateMedicationError) {
           console.error('Error updating medication status:', updateMedicationError);
+          throw updateMedicationError;
         }
         
         toast({
@@ -142,10 +152,13 @@ export const useMedicationHistory = () => {
           .update({
             status: 'missed',
             notes: `Medication missed at ${new Date().toLocaleTimeString()}`
-          } as any)
+          })
           .eq('id', record.id);
         
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating medication history:", updateError);
+          throw updateError;
+        }
         
         toast({
           title: "Recorded",
@@ -166,9 +179,12 @@ export const useMedicationHistory = () => {
             taken_time: null,
             status: 'missed',
             notes: `Medication missed at ${new Date().toLocaleTimeString()}`
-          }] as any);
+          }]);
         
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error inserting medication history:", insertError);
+          throw insertError;
+        }
         
         toast({
           title: "Recorded",
