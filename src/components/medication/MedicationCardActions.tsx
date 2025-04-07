@@ -20,18 +20,38 @@ export function MedicationCardActions({
   const { toast } = useToast();
   
   const handleComplete = async () => {
-    // Record this in the medication history with the exact current time
-    const recorded = await recordMedicationTaken(medication);
-    
-    // If successfully recorded in history, mark as complete in main medications table
-    if (recorded) {
-      onComplete(medication);
+    try {
+      // Record this in the medication history with the exact current time
+      const recorded = await recordMedicationTaken(medication);
+      
+      console.log("Medication recorded as taken:", recorded);
+      
+      // If successfully recorded in history, mark as complete in main medications table
+      if (recorded) {
+        onComplete(medication);
+      }
+    } catch (error) {
+      console.error("Error completing medication:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark medication as completed",
+        variant: "destructive",
+      });
     }
   };
   
   const handleMissed = async () => {
-    // Record this medication as missed with the current timestamp
-    await recordMedicationMissed(medication);
+    try {
+      // Record this medication as missed with the current timestamp
+      await recordMedicationMissed(medication);
+    } catch (error) {
+      console.error("Error marking medication as missed:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark medication as missed",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
