@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -11,7 +10,6 @@ import AuthPage from "@/components/auth/AuthPage";
 import AppHeader from "@/components/app/AppHeader";
 import { Medication } from "@/types/medication";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
-import { PatientStatistics } from "@/components/landing/PatientStatistics";
 
 const Index = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -22,7 +20,6 @@ const Index = () => {
   const { toast } = useToast();
   const { scheduleMedicationDoses } = useMedicationHistory();
 
-  // Auto-refresh medications every minute to ensure multi-day medications appear
   useEffect(() => {
     const interval = setInterval(() => {
       setRefreshTrigger(prev => prev + 1);
@@ -57,14 +54,12 @@ const Index = () => {
 
   useEffect(() => {
     const fetchMedications = async () => {
-      // Always fetch scheduled medications for today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
       
       try {
-        // First, fetch all scheduled doses for today from medication_history
         const { data: scheduledDoses, error: dosesError } = await supabase
           .from('medication_history')
           .select('*')
@@ -75,20 +70,17 @@ const Index = () => {
           
         if (dosesError) throw dosesError;
         
-        // Then fetch all medications
         const { data: medicationsData, error: medicationsError } = await supabase
           .from('medications')
           .select('*');
           
         if (medicationsError) throw medicationsError;
         
-        // Create a map of medication_id to determine which ones need to be shown today
         const activeMedicationIds = new Set();
         scheduledDoses?.forEach(dose => {
           activeMedicationIds.add(dose.medication_id);
         });
         
-        // Map all medications, but mark only those with scheduled doses for today as not completed
         const mappedMedications: Medication[] = medicationsData.map(med => ({
           id: med.id,
           patientId: med.patient_id,
@@ -229,7 +221,6 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="container py-8">
           <LandingPage onInterfaceSelect={setSelectedInterface} />
-          <PatientStatistics />
         </div>
       </div>
     );

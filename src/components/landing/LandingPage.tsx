@@ -1,12 +1,12 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { Stethoscope, Clipboard, ArrowRight } from "lucide-react";
-import { PatientStatistics } from "@/components/landing/PatientStatistics";
 
 interface LandingPageProps {
-  onInterfaceSelect: (interface: string) => void;
+  onInterfaceSelect: (interfaceType: string) => void;
 }
 
 const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
@@ -89,8 +89,6 @@ const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
           </div>
         </Tabs>
       </motion.div>
-      
-      <PatientStatistics />
     </div>
   );
 };
