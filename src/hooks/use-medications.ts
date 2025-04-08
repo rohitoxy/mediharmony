@@ -21,8 +21,12 @@ export const useMedications = (initialMedications: Medication[]) => {
         .update({ completed: true })
         .eq('id', medication.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error completing medication:', error);
+        throw error;
+      }
 
+      // Update local state to reflect the change
       setMedications(meds => 
         meds.map(med => 
           med.id === medication.id ? { ...med, completed: true } : med
@@ -33,6 +37,10 @@ export const useMedications = (initialMedications: Medication[]) => {
         title: "Success",
         description: "Medication marked as completed",
       });
+      
+      // Return the updated medication to propagate changes
+      return {...medication, completed: true};
+      
     } catch (error) {
       console.error('Error completing medication:', error);
       toast({
@@ -40,6 +48,7 @@ export const useMedications = (initialMedications: Medication[]) => {
         description: "Failed to mark medication as completed",
         variant: "destructive",
       });
+      return medication;
     }
   };
 
