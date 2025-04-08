@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, ArrowRight } from "lucide-react";
 import { Medication } from "@/types/medication";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface MedicationCardActionsProps {
@@ -25,6 +26,22 @@ export function MedicationCardActions({
     
     // If successfully recorded in history, mark as complete in main medications table
     if (recorded) {
+      // Update the medications table to mark it as completed
+      const { error } = await supabase
+        .from('medications')
+        .update({ completed: true })
+        .eq('id', medication.id);
+      
+      if (error) {
+        console.error('Error updating medication completion status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to mark medication as complete",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       onComplete(medication);
     }
   };
@@ -32,11 +49,6 @@ export function MedicationCardActions({
   const handleMissed = async () => {
     // Record this medication as missed
     await recordMedicationMissed(medication);
-  };
-
-  const handleDelete = () => {
-    // Delete the medication
-    onDelete(medication);
   };
 
   return (
@@ -60,16 +72,6 @@ export function MedicationCardActions({
       >
         <Check className="h-4 w-4" />
         <span>Complete</span>
-      </Button>
-
-      <Button
-        variant="outline"
-        size="sm"
-        className="border-red-300 hover:bg-red-100 hover:text-red-700"
-        onClick={handleDelete}
-      >
-        <X className="h-4 w-4" />
-        <span>Delete</span>
       </Button>
     </div>
   );
