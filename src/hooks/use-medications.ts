@@ -66,6 +66,7 @@ export const useMedications = (initialMedications: Medication[]) => {
 
       if (error) throw error;
 
+      // Update local state to remove the deleted medication
       setMedications(meds => meds.filter(med => med.id !== medication.id));
 
       toast({

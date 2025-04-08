@@ -30,6 +30,17 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
       setHistoryRefreshTrigger(prev => prev + 1);
     }
   };
+
+  // Set up an interval to refresh the medication history and patient report
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      if (activeTab === "medication-history" || activeTab === "patient-report") {
+        setHistoryRefreshTrigger(prev => prev + 1);
+      }
+    }, 30000); // Refresh every 30 seconds if on relevant tabs
+
+    return () => clearInterval(refreshInterval);
+  }, [activeTab]);
   
   return (
     <div className="max-w-4xl mx-auto">
