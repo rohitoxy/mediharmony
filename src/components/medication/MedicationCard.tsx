@@ -35,17 +35,9 @@ interface MedicationCardProps {
   onComplete: () => void;
   onDelete: () => void;
   compact?: boolean;
-  showDeleteButton?: boolean;
 }
 
-const MedicationCard = ({ 
-  medication, 
-  timeStatus, 
-  onComplete, 
-  onDelete, 
-  compact = false,
-  showDeleteButton = true 
-}: MedicationCardProps) => {
+const MedicationCard = ({ medication, timeStatus, onComplete, onDelete, compact = false }: MedicationCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isAlertActive = timeStatus === "upcoming" && !medication.completed;
   
@@ -110,7 +102,6 @@ const MedicationCard = ({
             isAlertActive={isAlertActive}
             onComplete={onComplete}
             onDelete={onDelete}
-            showDeleteButton={showDeleteButton}
             compact={true}
           />
 
@@ -168,7 +159,6 @@ const MedicationCard = ({
           isAlertActive={isAlertActive}
           onComplete={onComplete}
           onDelete={onDelete}
-          showDeleteButton={showDeleteButton}
         />
 
         {/* Content - with proper spacing to avoid overlapping */}

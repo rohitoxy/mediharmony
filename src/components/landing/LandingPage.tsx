@@ -1,93 +1,135 @@
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { Stethoscope, Clipboard, ArrowRight } from "lucide-react";
+import { Pill, Stethoscope, User, Clock, AlertCircle, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LandingPageProps {
-  onInterfaceSelect: (interfaceType: string) => void;
+  onInterfaceSelect: (interfaceType: "doctor" | "nurse") => void;
 }
 
 const LandingPage = ({ onInterfaceSelect }: LandingPageProps) => {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center mb-8"
-      >
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Med Alert
-        </h1>
-        <p className="text-muted-foreground mt-2 text-lg max-w-md mx-auto">
-          Streamlined medication management for healthcare professionals
-        </p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <Tabs defaultValue="doctor" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="doctor">Doctor</TabsTrigger>
-            <TabsTrigger value="nurse">Nurse</TabsTrigger>
-          </TabsList>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Stethoscope className="h-5 w-5 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Abstract background shapes */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+      </div>
+      
+      {/* Floating Icons Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[Clock, Pill, AlertCircle, Check, Stethoscope].map((Icon, index) => (
+          <motion.div
+            key={index}
+            className="absolute text-primary/30"
+            initial={{ 
+              x: Math.random() * 100, 
+              y: Math.random() * 100,
+              opacity: 0.2,
+              scale: 0.5 + Math.random() * 1.5
+            }}
+            animate={{ 
+              x: Math.random() * 100 - 50, 
+              y: Math.random() * 100 - 50,
+              opacity: 0.1 + Math.random() * 0.3,
+              rotate: Math.random() * 360
+            }}
+            transition={{ 
+              repeat: Infinity, 
+              duration: 15 + Math.random() * 10,
+              repeatType: "reverse" 
+            }}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+          >
+            <Icon size={20 + Math.random() * 40} />
+          </motion.div>
+        ))}
+      </div>
+      
+      <div className="space-y-8 text-center relative z-10 px-6 max-w-md">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col items-center justify-center gap-2"
+        >
+          <motion.div 
+            className="bg-gradient-to-br from-primary to-primary/80 p-5 rounded-full shadow-lg shadow-primary/30"
+            whileHover={{ scale: 1.05, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <Pill className="w-12 h-12 text-white" />
+          </motion.div>
+          <h1 className="text-5xl font-bold mb-4 text-gradient mt-4">
+            Med Alert
+          </h1>
+          <p className="text-xl text-slate-600 max-w-xs mx-auto mt-2">
+            Efficient medication management system for healthcare professionals
+          </p>
+        </motion.div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-xl border border-primary/10"
+        >
+          <h2 className="text-2xl font-semibold text-slate-700 mb-6">Choose your interface</h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full"
+            >
+              <Button
+                className="w-full sm:w-48 h-14 text-base shadow-lg bg-primary hover:bg-primary/90 text-white font-medium gap-2 group"
+                onClick={() => onInterfaceSelect("doctor")}
+              >
+                <motion.div
+                  whileHover={{ rotate: 15 }}
+                  className="bg-white/20 p-1.5 rounded-full"
+                >
+                  <Stethoscope className="w-5 h-5" />
+                </motion.div>
+                <span className="group-hover:translate-x-1 transition-transform">
                   Doctor Interface
-                </CardTitle>
-                <CardDescription>
-                  Prescribe and manage patient medications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-6">
-                  Access the doctor interface to prescribe new medications, 
-                  modify existing prescriptions, and view patient medication history.
-                </p>
-                <Button 
-                  className="w-full group"
-                  onClick={() => onInterfaceSelect("doctor")}
+                </span>
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full"
+            >
+              <Button
+                className="w-full sm:w-48 h-14 text-base shadow-lg bg-accent hover:bg-accent/90 text-white font-medium gap-2 group"
+                onClick={() => onInterfaceSelect("nurse")}
+              >
+                <motion.div
+                  whileHover={{ rotate: 15 }}
+                  className="bg-white/20 p-1.5 rounded-full"
                 >
-                  Continue as Doctor
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clipboard className="h-5 w-5 text-primary" />
+                  <User className="w-5 h-5" />
+                </motion.div>
+                <span className="group-hover:translate-x-1 transition-transform">
                   Nurse Interface
-                </CardTitle>
-                <CardDescription>
-                  Administer and track patient medications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-6">
-                  Access the nurse interface to view scheduled medications,
-                  mark medications as administered, and receive timely alerts.
-                </p>
-                <Button 
-                  className="w-full group"
-                  onClick={() => onInterfaceSelect("nurse")}
-                >
-                  Continue as Nurse
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
+                </span>
+              </Button>
+            </motion.div>
           </div>
-        </Tabs>
+        </motion.div>
+      </div>
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.8 }}
+        transition={{ delay: 1, duration: 0.8 }}
+        className="text-center text-xs text-slate-500 mt-auto py-4"
+      >
+        © {new Date().getFullYear()} Med Alert System • All Rights Reserved
       </motion.div>
     </div>
   );

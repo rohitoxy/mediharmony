@@ -1,5 +1,4 @@
-
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Medication } from "@/types/medication";
 import { useMedications } from "@/hooks/use-medications";
@@ -16,11 +15,13 @@ import MedicationFullScreenAlert from "./medication/MedicationFullScreenAlert";
 import MedicationReminderPopup from "./medication/MedicationReminderPopup";
 
 const NurseInterface = ({ medications: initialMedications }: { medications: Medication[] }) => {
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showAlertsPanel, setShowAlertsPanel] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
   
-  const { medications, handleComplete } = useMedications(initialMedications);
+  const { medications, handleComplete, handleDelete } = useMedications(initialMedications);
   const { 
     currentTime, 
     isSoundEnabled, 
@@ -129,8 +130,38 @@ const NurseInterface = ({ medications: initialMedications }: { medications: Medi
         medications={filteredMedications}
         getTimeStatus={getTimeStatus}
         onComplete={handleComplete}
+        onDelete={(medication) => {
+          setSelectedMedication(medication);
+          setIsDeleteDialogOpen(true);
+        }}
         viewMode={viewMode}
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Medication</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this medication? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                if (selectedMedication) {
+                  handleDelete(selectedMedication);
+                  setIsDeleteDialogOpen(false);
+                  setSelectedMedication(null);
+                }
+              }} 
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AnimatePresence>
         {activeAlert && (

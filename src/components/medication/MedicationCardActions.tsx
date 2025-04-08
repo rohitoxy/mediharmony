@@ -1,67 +1,54 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
+import { Check, X, ArrowRight } from "lucide-react";
 import { Medication } from "@/types/medication";
 import { useMedicationHistory } from "@/hooks/use-medication-history";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface MedicationCardActionsProps {
   medication: Medication;
   onComplete: (medication: Medication) => void;
-  showDeleteButton?: boolean;
+  onDelete: (medication: Medication) => void;
 }
 
 export function MedicationCardActions({ 
   medication, 
-  onComplete,
-  showDeleteButton = true
+  onComplete, 
+  onDelete 
 }: MedicationCardActionsProps) {
   const { recordMedicationTaken, recordMedicationMissed, loading } = useMedicationHistory();
   const { toast } = useToast();
   
   const handleComplete = async () => {
-    try {
-      console.log("Handling completion for medication:", medication.id, "Current status:", medication.completed);
+    // Record this in the medication history
+    const recorded = await recordMedicationTaken(medication);
+    
+    // If successfully recorded in history, mark as complete in main medications table
+    if (recorded) {
+      // Update the medications table to mark it as completed
+      const { error } = await supabase
+        .from('medications')
+        .update({ completed: true })
+        .eq('id', medication.id);
       
-      // Record this in the medication history with the exact current time
-      const recorded = await recordMedicationTaken(medication);
-      
-      console.log("Medication recorded as taken:", recorded);
-      
-      // If successfully recorded in history, mark as complete in main medications table
-      if (recorded) {
-        const updatedMedication = await onComplete(medication);
-        console.log("Medication marked as completed:", updatedMedication);
+      if (error) {
+        console.error('Error updating medication completion status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to mark medication as complete",
+          variant: "destructive",
+        });
+        return;
       }
-    } catch (error) {
-      console.error("Error completing medication:", error);
-      toast({
-        title: "Error",
-        description: "Failed to mark medication as completed",
-        variant: "destructive",
-      });
+      
+      onComplete(medication);
     }
   };
   
   const handleMissed = async () => {
-    try {
-      console.log("Marking medication as missed:", medication.id);
-      // Record this medication as missed with the current timestamp
-      const recorded = await recordMedicationMissed(medication);
-      
-      // If successfully recorded as missed, also mark as complete
-      if (recorded) {
-        const updatedMedication = await onComplete(medication);
-        console.log("Medication marked as missed and completed:", updatedMedication);
-      }
-    } catch (error) {
-      console.error("Error marking medication as missed:", error);
-      toast({
-        title: "Error",
-        description: "Failed to mark medication as missed",
-        variant: "destructive",
-      });
-    }
+    // Record this medication as missed
+    await recordMedicationMissed(medication);
   };
 
   return (

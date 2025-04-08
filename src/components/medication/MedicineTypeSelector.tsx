@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { 
   Pill, 
   Syringe, 
@@ -14,75 +14,56 @@ type MedicineType = 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'd
 interface MedicineTypeSelectorProps {
   selectedType: MedicineType;
   onChange: (type: MedicineType) => void;
-  onDosageFormatChange?: (format: string) => void;
 }
 
 export const MedicineTypeSelector: React.FC<MedicineTypeSelectorProps> = ({ 
   selectedType, 
-  onChange,
-  onDosageFormatChange 
+  onChange 
 }) => {
-  // Medicine type options with icons, labels, and default dosage formats
+  // Medicine type options with icons and labels
   const medicineTypes: Array<{
     type: MedicineType;
     icon: React.ReactNode;
     label: string;
     color: string;
-    defaultDosageFormat: string;
   }> = [
     { 
       type: 'pill', 
       icon: <Pill className="w-6 h-6" />, 
       label: 'Pills',
-      color: 'text-blue-500',
-      defaultDosageFormat: 'tablets' 
+      color: 'text-blue-500' 
     },
     { 
       type: 'injection', 
       icon: <Syringe className="w-6 h-6" />, 
       label: 'Injection',
-      color: 'text-red-500',
-      defaultDosageFormat: 'mL' 
+      color: 'text-red-500' 
     },
     { 
       type: 'liquid', 
       icon: <Droplets className="w-6 h-6" />, 
       label: 'Liquid',
-      color: 'text-teal-500',
-      defaultDosageFormat: 'mL' 
+      color: 'text-teal-500' 
     },
     { 
       type: 'inhaler', 
       icon: <Wind className="w-6 h-6" />, 
       label: 'Inhaler',
-      color: 'text-purple-500',
-      defaultDosageFormat: 'puffs' 
+      color: 'text-purple-500' 
     },
     { 
       type: 'topical', 
       icon: <Paintbrush className="w-6 h-6" />, 
       label: 'Topical',
-      color: 'text-amber-500',
-      defaultDosageFormat: 'application' 
+      color: 'text-amber-500' 
     },
     { 
       type: 'drops', 
       icon: <Heart className="w-6 h-6" />, 
       label: 'Drops',
-      color: 'text-pink-500',
-      defaultDosageFormat: 'drops' 
+      color: 'text-pink-500' 
     }
   ];
-
-  // Update dosage format when medicine type changes
-  useEffect(() => {
-    if (onDosageFormatChange) {
-      const selectedMedicineType = medicineTypes.find(type => type.type === selectedType);
-      if (selectedMedicineType) {
-        onDosageFormatChange(selectedMedicineType.defaultDosageFormat);
-      }
-    }
-  }, [selectedType, onDosageFormatChange]);
 
   return (
     <div className="grid grid-cols-3 gap-3">

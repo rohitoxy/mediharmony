@@ -10,7 +10,6 @@ interface MedicationCardActionsProps {
   onComplete: () => void;
   onDelete: () => void;
   compact?: boolean;
-  showDeleteButton?: boolean;
 }
 
 export const MedicationCardActions = ({
@@ -19,8 +18,7 @@ export const MedicationCardActions = ({
   isAlertActive,
   onComplete,
   onDelete,
-  compact = false,
-  showDeleteButton = false
+  compact = false
 }: MedicationCardActionsProps) => {
   if (compact) {
     return (
@@ -32,19 +30,17 @@ export const MedicationCardActions = ({
             onCheckedChange={onComplete}
             className={`h-4 w-4 border-2 bg-background ${isAlertActive ? 'animate-pulse' : ''}`}
           />
-          {showDeleteButton && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="h-6 w-6 bg-white hover:bg-red-100 hover:text-red-600 rounded-full"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="h-6 w-6 bg-white hover:bg-red-100 hover:text-red-600 rounded-full"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
       </div>
     );
@@ -60,19 +56,17 @@ export const MedicationCardActions = ({
           className={`h-4 w-4 border-2 ${isAlertActive ? 'animate-pulse' : ''}`}
         />
       </div>
-      {showDeleteButton && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="h-6 w-6 hover:bg-red-100 hover:text-red-600 rounded-full"
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
-      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        className="h-6 w-6 hover:bg-red-100 hover:text-red-600 rounded-full"
+      >
+        <Trash2 className="h-3 w-3" />
+      </Button>
     </div>
   );
 };

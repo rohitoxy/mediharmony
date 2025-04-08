@@ -9,28 +9,7 @@ export const useMedications = (initialMedications: Medication[]) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Only update medications if initialMedications changes and is different
-    // This prevents losing completion status when switching interfaces
-    if (initialMedications.length > 0) {
-      setMedications(prevMeds => {
-        // Create a map of existing medications with their completion status
-        const existingMedsMap = new Map<string, boolean>();
-        prevMeds.forEach(med => {
-          existingMedsMap.set(med.id, !!med.completed);
-        });
-        
-        // Preserve completion status for medications that exist in both arrays
-        return initialMedications.map(med => {
-          // If medication already exists and was completed, preserve that status
-          if (existingMedsMap.has(med.id) && existingMedsMap.get(med.id)) {
-            return {...med, completed: true};
-          }
-          return med;
-        });
-      });
-    } else {
-      setMedications(initialMedications);
-    }
+    setMedications(initialMedications);
   }, [initialMedications]);
 
   const handleComplete = async (medication: Medication) => {
@@ -42,12 +21,8 @@ export const useMedications = (initialMedications: Medication[]) => {
         .update({ completed: true })
         .eq('id', medication.id);
 
-      if (error) {
-        console.error('Error completing medication:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // Update local state to reflect the change
       setMedications(meds => 
         meds.map(med => 
           med.id === medication.id ? { ...med, completed: true } : med
@@ -58,10 +33,6 @@ export const useMedications = (initialMedications: Medication[]) => {
         title: "Success",
         description: "Medication marked as completed",
       });
-      
-      // Return the updated medication to propagate changes
-      return {...medication, completed: true};
-      
     } catch (error) {
       console.error('Error completing medication:', error);
       toast({
@@ -69,12 +40,51 @@ export const useMedications = (initialMedications: Medication[]) => {
         description: "Failed to mark medication as completed",
         variant: "destructive",
       });
-      return medication;
+    }
+  };
+
+  const handleDelete = async (medication: Medication) => {
+    try {
+      console.log("Deleting medication with ID:", medication.id);
+      
+      // First, delete any related records in the medication_history table
+      const { error: historyDeleteError } = await supabase
+        .from('medication_history')
+        .delete()
+        .eq('medication_id', medication.id);
+
+      if (historyDeleteError) {
+        console.error('Error deleting medication history records:', historyDeleteError);
+        throw historyDeleteError;
+      }
+      
+      // Now delete the medication itself
+      const { error } = await supabase
+        .from('medications')
+        .delete()
+        .eq('id', medication.id);
+
+      if (error) throw error;
+
+      setMedications(meds => meds.filter(med => med.id !== medication.id));
+
+      toast({
+        title: "Success",
+        description: "Medication deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting medication:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete medication",
+        variant: "destructive",
+      });
     }
   };
 
   return {
     medications,
     handleComplete,
+    handleDelete,
   };
 };
