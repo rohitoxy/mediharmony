@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import DoctorInterface from "@/components/DoctorInterface";
@@ -60,6 +61,14 @@ const Index = () => {
       tomorrow.setDate(tomorrow.getDate() + 1);
       
       try {
+        // First fetch all medications, then check which ones are scheduled
+        const { data: medicationsData, error: medicationsError } = await supabase
+          .from('medications')
+          .select('*');
+          
+        if (medicationsError) throw medicationsError;
+        
+        // Then check which medications have scheduled doses
         const { data: scheduledDoses, error: dosesError } = await supabase
           .from('medication_history')
           .select('*')
@@ -69,12 +78,6 @@ const Index = () => {
           .order('scheduled_time', { ascending: true });
           
         if (dosesError) throw dosesError;
-        
-        const { data: medicationsData, error: medicationsError } = await supabase
-          .from('medications')
-          .select('*');
-          
-        if (medicationsError) throw medicationsError;
         
         const activeMedicationIds = new Set();
         scheduledDoses?.forEach(dose => {
@@ -91,7 +94,7 @@ const Index = () => {
           time: med.notification_time,
           dosage: med.dosage,
           notes: med.notes || undefined,
-          completed: activeMedicationIds.has(med.id) ? false : (med.completed || false),
+          completed: med.completed || false, // Use the completed status from the database
           priority: (med.priority as 'high' | 'medium' | 'low') || 'medium',
           medicineType: med.medicine_type as 'pill' | 'injection' | 'liquid' | 'inhaler' | 'topical' | 'drops' || 'pill',
           frequency: med.frequency || 'once',

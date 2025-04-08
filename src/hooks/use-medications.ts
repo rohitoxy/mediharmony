@@ -9,7 +9,28 @@ export const useMedications = (initialMedications: Medication[]) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    setMedications(initialMedications);
+    // Only update medications if initialMedications changes and is different
+    // This prevents losing completion status when switching interfaces
+    if (initialMedications.length > 0) {
+      setMedications(prevMeds => {
+        // Create a map of existing medications with their completion status
+        const existingMedsMap = new Map<string, boolean>();
+        prevMeds.forEach(med => {
+          existingMedsMap.set(med.id, !!med.completed);
+        });
+        
+        // Preserve completion status for medications that exist in both arrays
+        return initialMedications.map(med => {
+          // If medication already exists and was completed, preserve that status
+          if (existingMedsMap.has(med.id) && existingMedsMap.get(med.id)) {
+            return {...med, completed: true};
+          }
+          return med;
+        });
+      });
+    } else {
+      setMedications(initialMedications);
+    }
   }, [initialMedications]);
 
   const handleComplete = async (medication: Medication) => {
