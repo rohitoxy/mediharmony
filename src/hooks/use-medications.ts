@@ -21,8 +21,12 @@ export const useMedications = (initialMedications: Medication[]) => {
         .update({ completed: true })
         .eq('id', medication.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error completing medication:', error);
+        throw error;
+      }
 
+      // Update local state to reflect the change
       setMedications(meds => 
         meds.map(med => 
           med.id === medication.id ? { ...med, completed: true } : med
@@ -33,6 +37,10 @@ export const useMedications = (initialMedications: Medication[]) => {
         title: "Success",
         description: "Medication marked as completed",
       });
+      
+      // Return the updated medication to propagate changes
+      return {...medication, completed: true};
+      
     } catch (error) {
       console.error('Error completing medication:', error);
       toast({
@@ -40,51 +48,12 @@ export const useMedications = (initialMedications: Medication[]) => {
         description: "Failed to mark medication as completed",
         variant: "destructive",
       });
-    }
-  };
-
-  const handleDelete = async (medication: Medication) => {
-    try {
-      console.log("Deleting medication with ID:", medication.id);
-      
-      // First, delete any related records in the medication_history table
-      const { error: historyDeleteError } = await supabase
-        .from('medication_history')
-        .delete()
-        .eq('medication_id', medication.id);
-
-      if (historyDeleteError) {
-        console.error('Error deleting medication history records:', historyDeleteError);
-        throw historyDeleteError;
-      }
-      
-      // Now delete the medication itself
-      const { error } = await supabase
-        .from('medications')
-        .delete()
-        .eq('id', medication.id);
-
-      if (error) throw error;
-
-      setMedications(meds => meds.filter(med => med.id !== medication.id));
-
-      toast({
-        title: "Success",
-        description: "Medication deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting medication:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete medication",
-        variant: "destructive",
-      });
+      return medication;
     }
   };
 
   return {
     medications,
     handleComplete,
-    handleDelete,
   };
 };
