@@ -160,19 +160,6 @@ export const useMedicationHistory = () => {
           throw updateError;
         }
         
-        // Also update the medication's completed status in the medications table
-        const { error: updateMedicationError } = await supabase
-          .from('medications')
-          .update({
-            completed: true
-          })
-          .eq('id', medication.id);
-          
-        if (updateMedicationError) {
-          console.error('Error updating medication status for missed medication:', updateMedicationError);
-          throw updateMedicationError;
-        }
-        
         toast({
           title: "Recorded",
           description: "Medication marked as missed",
@@ -197,19 +184,6 @@ export const useMedicationHistory = () => {
         if (insertError) {
           console.error("Error inserting medication history:", insertError);
           throw insertError;
-        }
-        
-        // Also update the medication's completed status in the medications table
-        const { error: updateMedicationError } = await supabase
-          .from('medications')
-          .update({
-            completed: true
-          })
-          .eq('id', medication.id);
-          
-        if (updateMedicationError) {
-          console.error('Error updating medication status for missed medication:', updateMedicationError);
-          throw updateMedicationError;
         }
         
         toast({
