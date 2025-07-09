@@ -57,6 +57,32 @@ const MedicationHistory = ({ refreshTrigger = 0, onMedicationDelete }: Medicatio
     fetchMedicationHistory();
   }, [refreshTrigger]);
 
+  // Set up real-time subscriptions for this component
+  useEffect(() => {
+    console.log("Setting up real-time subscriptions for medication history");
+
+    const channel = supabase
+      .channel('medication-history-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'medication_history'
+        },
+        (payload) => {
+          console.log('Real-time medication history update:', payload);
+          fetchMedicationHistory();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log("Cleaning up medication history real-time subscription");
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     // Apply filters whenever filter values or history changes
     let filtered = history;

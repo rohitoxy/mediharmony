@@ -125,13 +125,58 @@ const DoctorInterface = ({ onMedicationAdd }: { onMedicationAdd: (medication: Me
     }
   };
 
-  // Set up an interval to refresh the medication history and patient report
+  // Set up real-time subscriptions for medication updates
+  useEffect(() => {
+    console.log("Setting up real-time subscriptions for doctor interface");
+
+    // Subscribe to medication table changes
+    const medicationChannel = supabase
+      .channel('medication-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'medications'
+        },
+        (payload) => {
+          console.log('Medication table change detected:', payload);
+          setHistoryRefreshTrigger(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    // Subscribe to medication history table changes
+    const historyChannel = supabase
+      .channel('medication-history-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'medication_history'
+        },
+        (payload) => {
+          console.log('Medication history change detected:', payload);
+          setHistoryRefreshTrigger(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log("Cleaning up real-time subscriptions");
+      supabase.removeChannel(medicationChannel);
+      supabase.removeChannel(historyChannel);
+    };
+  }, []);
+
+  // Set up an interval to refresh as a fallback
   useEffect(() => {
     const refreshInterval = setInterval(() => {
       if (activeTab === "medication-history" || activeTab === "patient-report") {
         setHistoryRefreshTrigger(prev => prev + 1);
       }
-    }, 15000); // Refresh every 15 seconds if on relevant tabs (increased frequency for better sync)
+    }, 30000); // Refresh every 30 seconds as fallback
 
     return () => clearInterval(refreshInterval);
   }, [activeTab]);
