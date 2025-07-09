@@ -16,18 +16,28 @@ export const useMedications = (initialMedications: Medication[]) => {
     try {
       console.log("Completing medication with ID:", medication.id);
       
-      const { error } = await supabase
-        .from('medications')
-        .update({ completed: true })
-        .eq('id', medication.id);
-
-      if (error) throw error;
-
+      // Update the local state immediately for better UX
       setMedications(meds => 
         meds.map(med => 
           med.id === medication.id ? { ...med, completed: true } : med
         )
       );
+
+      // Update the database
+      const { error } = await supabase
+        .from('medications')
+        .update({ completed: true })
+        .eq('id', medication.id);
+
+      if (error) {
+        // Revert the optimistic update if database update fails
+        setMedications(meds => 
+          meds.map(med => 
+            med.id === medication.id ? { ...med, completed: false } : med
+          )
+        );
+        throw error;
+      }
 
       toast({
         title: "Success",

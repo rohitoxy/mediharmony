@@ -112,6 +112,7 @@ const MedicationCard = ({
             onDelete={onDelete}
             showDeleteButton={showDeleteButton}
             compact={true}
+            medication={medication}
           />
 
           <div className="flex flex-col items-center justify-center p-2 h-full">
@@ -169,6 +170,7 @@ const MedicationCard = ({
           onComplete={onComplete}
           onDelete={onDelete}
           showDeleteButton={showDeleteButton}
+          medication={medication}
         />
 
         {/* Content - with proper spacing to avoid overlapping */}

@@ -2,6 +2,9 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { Medication } from "@/types/medication";
+import { useMedicationHistory } from "@/hooks/use-medication-history";
+import { useToast } from "@/hooks/use-toast";
 
 interface MedicationCardActionsProps {
   id: string;
@@ -11,6 +14,7 @@ interface MedicationCardActionsProps {
   onDelete: () => void;
   compact?: boolean;
   showDeleteButton?: boolean;
+  medication?: Medication;
 }
 
 export const MedicationCardActions = ({
@@ -20,8 +24,31 @@ export const MedicationCardActions = ({
   onComplete,
   onDelete,
   compact = false,
-  showDeleteButton = false
+  showDeleteButton = false,
+  medication
 }: MedicationCardActionsProps) => {
+  const { recordMedicationTaken, loading } = useMedicationHistory();
+  const { toast } = useToast();
+
+  const handleComplete = async () => {
+    if (medication) {
+      try {
+        const recorded = await recordMedicationTaken(medication);
+        if (recorded) {
+          onComplete();
+        }
+      } catch (error) {
+        console.error("Error completing medication:", error);
+        toast({
+          title: "Error",
+          description: "Failed to mark medication as completed",
+          variant: "destructive",
+        });
+      }
+    } else {
+      onComplete();
+    }
+  };
   if (compact) {
     return (
       <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/20 transition-opacity rounded-md">
@@ -29,7 +56,8 @@ export const MedicationCardActions = ({
           <Checkbox
             id={`checkbox-${id}`}
             checked={completed}
-            onCheckedChange={onComplete}
+            onCheckedChange={handleComplete}
+            disabled={loading}
             className={`h-4 w-4 border-2 bg-background ${isAlertActive ? 'animate-pulse' : ''}`}
           />
           {showDeleteButton && (
@@ -56,7 +84,8 @@ export const MedicationCardActions = ({
         <Checkbox
           id={`checkbox-${id}`}
           checked={completed}
-          onCheckedChange={onComplete}
+          onCheckedChange={handleComplete}
+          disabled={loading}
           className={`h-4 w-4 border-2 ${isAlertActive ? 'animate-pulse' : ''}`}
         />
       </div>
